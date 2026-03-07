@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Buy — Smart Student Marketplace</title>
+    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+      .home-section {
+        margin-bottom: 2rem;
+      }
+      .home-hero {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        align-items: start;
+        margin-bottom: 2.5rem;
+      }
+      .home-tagline {
+        font-size: 0.82rem;
+        color: #818cf8;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        letter-spacing: 0.04em;
+      }
+      .home-title {
+        font-size: clamp(1.6rem, 3vw, 2.2rem);
+        font-weight: 700;
+        line-height: 1.25;
+        margin-bottom: 0.9rem;
+      }
+      .home-subtitle {
+        font-size: 0.95rem;
+        color: #d1d5db;
+        line-height: 1.6;
+        margin-bottom: 1.2rem;
+      }
+      .home-highlights {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 1.4rem;
+      }
+      .home-highlights span {
+        font-size: 0.78rem;
+        padding: 0.3rem 0.75rem;
+        border-radius: 999px;
+        border: 1px solid rgba(129,140,248,0.5);
+        background: rgba(129,140,248,0.08);
+        color: #c7d2fe;
+      }
+      .home-cta {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+      }
+      .home-hero-cards {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.85rem;
+      }
+      .home-feature-card {
+        background: rgba(2,6,23,0.7);
+        border: 1px solid rgba(148,163,184,0.25);
+        border-radius: 1rem;
+        padding: 1rem 1rem 0.9rem;
+        transition: border-color 0.12s, transform 0.12s;
+      }
+      .home-feature-card:hover {
+        border-color: rgba(129,140,248,0.6);
+        transform: translateY(-2px);
+      }
+      .feature-icon {
+        font-size: 1.5rem;
+        margin-bottom: 0.4rem;
+      }
+      .home-feature-card h3 {
+        font-size: 0.88rem;
+        font-weight: 600;
+        margin-bottom: 0.3rem;
+      }
+      .home-feature-card p {
+        font-size: 0.78rem;
+        color: #9ca3af;
+        line-height: 1.5;
+      }
+      .how-it-works {
+        background: rgba(2,6,23,0.5);
+        border: 1px solid rgba(148,163,184,0.2);
+        border-radius: 1.2rem;
+        padding: 1.5rem 1.8rem;
+        margin-bottom: 2rem;
+      }
+      .how-it-works h2 {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 1.2rem;
+        color: #e5e7eb;
+      }
+      .steps-row {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+      }
+      .step {
+        flex: 1;
+        min-width: 120px;
+        text-align: center;
+      }
+      .step-number {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #4f46e5, #6366f1);
+        color: #fff;
+        font-weight: 700;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 0.5rem;
+        box-shadow: 0 6px 16px rgba(79,70,229,0.4);
+      }
+      .step h4 {
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-bottom: 0.2rem;
+      }
+      .step p {
+        font-size: 0.75rem;
+        color: #9ca3af;
+        line-height: 1.4;
+      }
+      .step-arrow {
+        font-size: 1.2rem;
+        color: #4f46e5;
+        font-weight: 700;
+        flex-shrink: 0;
+      }
+      @media (max-width: 768px) {
+        .home-hero { grid-template-columns: 1fr; }
+        .steps-row { gap: 1rem; }
+        .step-arrow { transform: rotate(90deg); }
+      }
+      @media (max-width: 480px) {
+        .home-hero-cards { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="top-nav">
+      <div class="nav-left">
+        <div class="brand-logo small">SSM</div>
+        <div class="nav-title-group">
+          <span class="nav-title">Smart Student Marketplace</span>
+          <span class="nav-subtitle">For your campus community</span>
+        </div>
+      </div>
+      <nav class="nav-center">
+        <button class="nav-link active" onclick="location.href='buy.html'">Buy</button>
+        <button class="nav-link" onclick="location.href='sell.html'">Sell</button>
+        <button class="nav-link" onclick="location.href='chat.html'">💬 Chats</button>
+        <button class="nav-link" onclick="location.href='profile.html'">Profile</button>
+      </nav>
+      <div class="nav-right">
+        <span id="current-user-email" class="nav-user"></span>
+        <button id="logout-btn" class="ghost-btn">Logout</button>
+      </div>
+    </header>
+
+    <main>
+
+      <!-- HOME SECTION -->
+      <section class="home-section">
+
+        <!-- Hero -->
+        <div class="home-hero">
+          <div class="home-hero-text">
+            <p class="home-tagline">🎓 Campus-only marketplace</p>
+            <h1 class="home-title">Hi <span id="user-greeting-name">Student</span>, welcome back! 👋</h1>
+            <p class="home-subtitle">
+              Buy and sell used items safely within your college community.
+              Only verified <strong>@amjaincollege.edu.in</strong> students can access this platform.
+            </p>
+            <div class="home-highlights">
+              <span>✅ Verified students only</span>
+              <span>🏫 On-campus meetups</span>
+              <span>🔒 Safe and trusted</span>
+              <span>💬 Real-time chat</span>
+            </div>
+            <div class="home-cta">
+              <button class="primary-btn" onclick="document.getElementById('products-section').scrollIntoView({behavior:'smooth'})">
+                Browse Products ↓
+              </button>
+              <button class="ghost-btn" onclick="location.href='sell.html'">
+                + List an Item
+              </button>
+            </div>
+          </div>
+
+          <!-- Feature cards -->
+          <div class="home-hero-cards">
+            <div class="home-feature-card">
+              <div class="feature-icon">📚</div>
+              <h3>Buy Smart</h3>
+              <p>Find affordable books, electronics, and essentials listed by fellow students.</p>
+            </div>
+            <div class="home-feature-card">
+              <div class="feature-icon">💰</div>
+              <h3>Sell Fast</h3>
+              <p>List your unused items in minutes and connect with buyers on campus.</p>
+            </div>
+            <div class="home-feature-card">
+              <div class="feature-icon">💬</div>
+              <h3>Chat Directly</h3>
+              <p>Message sellers in real-time and arrange safe on-campus meetups.</p>
+            </div>
+            <div class="home-feature-card">
+              <div class="feature-icon">🔐</div>
+              <h3>100% Verified</h3>
+              <p>Every user is a verified college student — no outsiders, no scams.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- How it works -->
+        <div class="how-it-works">
+          <h2>⚡ How it works</h2>
+          <div class="steps-row">
+            <div class="step">
+              <div class="step-number">1</div>
+              <h4>Register</h4>
+              <p>Sign up with your college email to get verified access.</p>
+            </div>
+            <div class="step-arrow">→</div>
+            <div class="step">
+              <div class="step-number">2</div>
+              <h4>Browse or List</h4>
+              <p>Find what you need or list items you want to sell.</p>
+            </div>
+            <div class="step-arrow">→</div>
+            <div class="step">
+              <div class="step-number">3</div>
+              <h4>Chat</h4>
+              <p>Message the seller directly through real-time chat.</p>
+            </div>
+            <div class="step-arrow">→</div>
+            <div class="step">
+              <div class="step-number">4</div>
+              <h4>Meet and Deal</h4>
+              <p>Meet safely on campus and complete the transaction.</p>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- PRODUCTS SECTION -->
+      <section id="products-section" class="products-section">
+        <div class="section-header">
+          <div>
+            <h2>Browse Products</h2>
+            <p class="muted">Explore items currently trending among students on your campus.</p>
+          </div>
+          <div class="section-filters">
+            <select id="category-filter">
+              <option value="all">All categories</option>
+              <option value="Books">Books</option>
+              <option value="Electronics">Electronics</option>
+              <option value="Hostel Essentials">Hostel Essentials</option>
+              <option value="Accessories">Accessories</option>
+            </select>
+          </div>
+        </div>
+        <div id="products-grid" class="products-grid">
+          <p class="muted small">Loading products…</p>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Chat Overlay -->
+    <div id="chat-overlay" class="chat-overlay hidden" aria-hidden="true">
+      <div class="chat-window">
+        <div class="chat-header">
+          <div class="chat-header-main">
+            <span id="chat-product-name"></span>
+            <span id="chat-seller-name" class="muted small"></span>
+          </div>
+          <button id="chat-close" class="icon-btn" aria-label="Close chat">✕</button>
+        </div>
+        <div id="chat-messages" class="chat-messages">
+          <p class="muted small">Loading messages…</p>
+        </div>
+        <form id="chat-form" class="chat-input-row">
+          <input type="text" id="chat-input" placeholder="Type a message to the seller..." autocomplete="off" required />
+          <button type="submit" class="primary-btn">Send</button>
+        </form>
+      </div>
+    </div>
+
+    <script src="http://localhost:5000/socket.io/socket.io.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/common.js"></script>
+    <script src="js/buy.js"></script>
+  </body>
+</html>

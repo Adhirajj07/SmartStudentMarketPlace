@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sell — Smart Student Marketplace</title>
+    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <header class="top-nav">
+      <div class="nav-left">
+        <div class="brand-logo small">SSM</div>
+        <div class="nav-title-group">
+          <span class="nav-title">Smart Student Marketplace</span>
+          <span class="nav-subtitle">For your campus community</span>
+        </div>
+      </div>
+      <nav class="nav-center">
+        <button class="nav-link" onclick="location.href='buy.html'">Buy</button>
+        <button class="nav-link active" onclick="location.href='sell.html'">Sell</button>
+        <button class="nav-link" onclick="location.href='chat.html'">💬 Chats</button>
+        <button class="nav-link" onclick="location.href='profile.html'">Profile</button>
+      </nav>
+      <div class="nav-right">
+        <span id="current-user-email" class="nav-user"></span>
+        <button id="logout-btn" class="ghost-btn">Logout</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="sell-section" style="margin-top:1.5rem;">
+        <div class="section-header compact">
+          <div>
+            <h2>Sell an item</h2>
+            <p class="muted">Add a new product listing for verified students on campus.</p>
+          </div>
+        </div>
+
+        <form id="sell-form" class="sell-form">
+          <div class="form-grid">
+            <label>
+              Product name
+              <input type="text" id="sell-name" placeholder="e.g. Operating Systems Textbook" required />
+            </label>
+            <label>
+              Category
+              <select id="sell-category" required>
+                <option value="Books">Books</option>
+                <option value="Electronics">Electronics</option>
+                <option value="Hostel Essentials">Hostel Essentials</option>
+                <option value="Accessories">Accessories</option>
+              </select>
+            </label>
+            <label>
+              Suggested selling price (₹)
+              <input type="number" id="sell-suggested-price" min="1" step="1" placeholder="e.g. 499" required />
+            </label>
+            <label>
+              Original price (₹)
+              <input type="number" id="sell-original-price" min="1" step="1" placeholder="e.g. 999" required />
+            </label>
+            <label class="span-2">
+              Product image URL
+              <input type="url" id="sell-image" placeholder="https://example.com/image.jpg" required />
+            </label>
+            <label class="span-2">
+              Seller name (auto-filled)
+              <input type="text" id="sell-seller" placeholder="—" readonly />
+            </label>
+          </div>
+
+          <p id="sell-error" class="error-text" aria-live="polite"></p>
+          <p id="sell-success" class="success-text" aria-live="polite"></p>
+
+          <div class="form-actions">
+            <button type="submit" class="primary-btn">Add product</button>
+            <button type="button" id="sell-clear" class="ghost-btn">Clear</button>
+          </div>
+        </form>
+
+        <div class="divider"></div>
+
+        <div class="section-header compact">
+          <div>
+            <h2>My Listings</h2>
+            <p class="muted">Delete or review items you posted.</p>
+          </div>
+        </div>
+        <div id="my-listings" class="products-grid"></div>
+      </section>
+    </main>
+
+    <script src="js/api.js" defer></script>
+    <script src="js/common.js" defer></script>
+    <script src="js/sell.js" defer></script>
+  </body>
+</html>

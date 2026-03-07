@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Profile — Smart Student Marketplace</title>
+    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <header class="top-nav">
+      <div class="nav-left">
+        <div class="brand-logo small">SSM</div>
+        <div class="nav-title-group">
+          <span class="nav-title">Smart Student Marketplace</span>
+          <span class="nav-subtitle">For your campus community</span>
+        </div>
+      </div>
+      <nav class="nav-center">
+        <button class="nav-link" onclick="location.href='buy.html'">Buy</button>
+        <button class="nav-link" onclick="location.href='sell.html'">Sell</button>
+        <button class="nav-link" onclick="location.href='chat.html'">💬 Chats</button>
+        <button class="nav-link active" onclick="location.href='profile.html'">Profile</button>
+      </nav>
+      <div class="nav-right">
+        <span id="current-user-email" class="nav-user"></span>
+        <button id="logout-btn" class="ghost-btn">Logout</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="profile-section" style="margin-top:1.5rem;">
+        <div class="section-header compact">
+          <div>
+            <h2>Your Profile</h2>
+            <p class="muted">These details help verify student identity.</p>
+          </div>
+        </div>
+        <div class="profile-grid">
+          <div class="profile-item">
+            <span class="profile-label">Name</span>
+            <span id="profile-name" class="profile-value">—</span>
+          </div>
+          <div class="profile-item">
+            <span class="profile-label">College Email</span>
+            <span id="profile-email" class="profile-value">—</span>
+          </div>
+          <div class="profile-item">
+            <span class="profile-label">College Roll Number</span>
+            <span id="profile-roll" class="profile-value">—</span>
+          </div>
+          <div class="profile-item">
+            <span class="profile-label">University Register Number</span>
+            <span id="profile-university-reg" class="profile-value">—</span>
+          </div>
+          <div class="profile-item">
+            <span class="profile-label">Date of Birth</span>
+            <span id="profile-dob" class="profile-value">—</span>
+          </div>
+          <!-- NEW: Department & Year shown as "BCA 3rd Year" -->
+          <div class="profile-item">
+            <span class="profile-label">Department & Year</span>
+            <span id="profile-dept-year" class="profile-value">—</span>
+          </div>
+          <div class="profile-item">
+            <span class="profile-label">Verification</span>
+            <span id="profile-verified" class="profile-value">—</span>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="js/api.js" defer></script>
+    <script src="js/common.js" defer></script>
+    <script src="js/profile.js" defer></script>
+  </body>
+</html>

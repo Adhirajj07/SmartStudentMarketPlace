@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart Student Marketplace</title>
+    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <div id="auth-container">
+      <div class="auth-card">
+        <div class="brand">
+          <div class="brand-logo">SSM</div>
+          <div>
+            <h1>Smart Student Marketplace</h1>
+            <p class="muted">Campus-only marketplace for safe, verified student-to-student deals.</p>
+          </div>
+        </div>
+
+        <div class="auth-toggle">
+          <button id="show-login" class="active">Login</button>
+          <button id="show-register">Register</button>
+        </div>
+
+        <!-- LOGIN FORM -->
+        <form id="login-form" class="auth-form">
+          <h2>Welcome back</h2>
+          <label>
+            College email
+            <input type="email" id="login-email" placeholder="you@amjaincollege.edu.in" required />
+          </label>
+          <label>
+            Password
+            <input type="password" id="login-password" placeholder="••••••••" required />
+          </label>
+          <p id="login-error" class="error-text" aria-live="polite"></p>
+          <button type="submit" class="primary-btn full-width">Login</button>
+        </form>
+
+        <!-- REGISTER FORM -->
+        <form id="register-form" class="auth-form hidden">
+          <h2>Create your campus account</h2>
+          <label>
+            Full Name
+            <input type="text" id="register-name" placeholder="Your full name" required />
+          </label>
+          <label>
+            College email
+            <input type="email" id="register-email" placeholder="you@amjaincollege.edu.in" required />
+          </label>
+          <label>
+            Password
+            <input type="password" id="register-password" placeholder="Create a strong password" minlength="6" required />
+          </label>
+          <label>
+            College Roll Number
+            <input type="text" id="register-roll" placeholder="e.g. 22CSE123" required />
+          </label>
+          <label>
+            University Register Number
+            <input type="text" id="register-university-reg" placeholder="e.g. URN123456" required />
+          </label>
+          <label>
+            Date of Birth
+            <input type="date" id="register-dob" required />
+          </label>
+
+          <!-- Department + Year side by side -->
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.8rem;">
+            <label>
+              Department
+              <select id="register-department" required>
+                <option value="">Select dept</option>
+                <option value="BCA">BCA</option>
+                <option value="BSc CS">BSc CS</option>
+                <option value="BSc IT">BSc IT</option>
+                <option value="BE CSE">BE CSE</option>
+                <option value="BE ECE">BE ECE</option>
+                <option value="BE EEE">BE EEE</option>
+                <option value="BE Mech">BE Mech</option>
+                <option value="BE Civil">BE Civil</option>
+                <option value="MBA">MBA</option>
+                <option value="MCA">MCA</option>
+                <option value="MSc">MSc</option>
+              </select>
+            </label>
+            <label>
+              Year
+              <select id="register-year" required>
+                <option value="">Select year</option>
+                <option value="1st Year">1st Year</option>
+                <option value="2nd Year">2nd Year</option>
+                <option value="3rd Year">3rd Year</option>
+                <option value="4th Year">4th Year</option>
+              </select>
+            </label>
+          </div>
+
+          <p class="muted small">
+            Only official college email IDs are allowed (e.g. <code>@amjaincollege.edu.in</code>).
+          </p>
+          <p id="register-error" class="error-text" aria-live="polite"></p>
+          <button type="submit" class="primary-btn full-width">Register</button>
+        </form>
+      </div>
+    </div>
+
+    <script src="js/api.js" ></script>
+    <script src="js/auth.js" ></script>
+  </body>
+</html>

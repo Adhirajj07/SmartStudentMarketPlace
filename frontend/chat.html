@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chats — Smart Student Marketplace</title>
+    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+      .chat-layout {
+        display: grid;
+        grid-template-columns: 300px 1fr;
+        gap: 1.2rem;
+        height: calc(100vh - 100px);
+        margin-top: 1.5rem;
+      }
+      .thread-list {
+        background: rgba(2,6,23,0.7);
+        border: 1px solid rgba(148,163,184,0.35);
+        border-radius: 1.2rem;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+      }
+      .thread-list-header {
+        padding: 1rem 1rem 0.7rem;
+        border-bottom: 1px solid rgba(148,163,184,0.2);
+        font-weight: 600;
+        font-size: 0.95rem;
+      }
+      .thread-item {
+        padding: 0.85rem 1rem;
+        border-bottom: 1px solid rgba(148,163,184,0.1);
+        cursor: pointer;
+        transition: background 0.12s;
+      }
+      .thread-item:hover, .thread-item.active {
+        background: rgba(129,140,248,0.12);
+      }
+      .thread-buyer {
+        font-size: 0.88rem;
+        font-weight: 500;
+        color: #e5e7eb;
+      }
+      .thread-product {
+        font-size: 0.76rem;
+        color: #9ca3af;
+        margin-top: 0.15rem;
+      }
+      .thread-preview {
+        font-size: 0.78rem;
+        color: #6b7280;
+        margin-top: 0.2rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .chat-panel {
+        background: rgba(2,6,23,0.7);
+        border: 1px solid rgba(148,163,184,0.35);
+        border-radius: 1.2rem;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+      .chat-panel-header {
+        padding: 0.9rem 1.1rem;
+        border-bottom: 1px solid rgba(148,163,184,0.2);
+        display: flex;
+        flex-direction: column;
+        gap: 0.1rem;
+      }
+      .chat-panel-header .buyer-name {
+        font-weight: 600;
+        font-size: 0.95rem;
+      }
+      .chat-panel-header .product-name {
+        font-size: 0.78rem;
+        color: #9ca3af;
+      }
+      .chat-panel-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+      .chat-panel-form {
+        padding: 0.7rem 0.8rem 0.8rem;
+        border-top: 1px solid rgba(148,163,184,0.2);
+        display: flex;
+        gap: 0.5rem;
+      }
+      .chat-panel-form input {
+        flex: 1;
+        border-radius: 999px;
+        border: 1px solid rgba(148,163,184,0.7);
+        padding: 0.45rem 0.8rem;
+        background: rgba(15,23,42,0.95);
+        color: #e5e7eb;
+        outline: none;
+        font-size: 0.86rem;
+        font-family: inherit;
+      }
+      .chat-panel-form input::placeholder { color: #6b7280; }
+      .empty-state {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: #6b7280;
+        font-size: 0.9rem;
+        gap: 0.5rem;
+      }
+      .empty-state span { font-size: 2.5rem; }
+      .no-threads {
+        padding: 1.5rem 1rem;
+        text-align: center;
+        color: #6b7280;
+        font-size: 0.85rem;
+      }
+      @media (max-width: 640px) {
+        .chat-layout { grid-template-columns: 1fr; height: auto; }
+        .thread-list { max-height: 220px; }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="top-nav">
+      <div class="nav-left">
+        <div class="brand-logo small">SSM</div>
+        <div class="nav-title-group">
+          <span class="nav-title">Smart Student Marketplace</span>
+          <span class="nav-subtitle">For your campus community</span>
+        </div>
+      </div>
+      <nav class="nav-center">
+        <button class="nav-link" onclick="location.href='buy.html'">Buy</button>
+        <button class="nav-link" onclick="location.href='sell.html'">Sell</button>
+        <button class="nav-link active" onclick="location.href='chat.html'">💬 Chats</button>
+        <button class="nav-link" onclick="location.href='profile.html'">Profile</button>
+      </nav>
+      <div class="nav-right">
+        <span id="current-user-email" class="nav-user"></span>
+        <button id="logout-btn" class="ghost-btn">Logout</button>
+      </div>
+    </header>
+
+    <main style="max-width:1120px; margin:0 auto; padding:0 1.5rem;">
+      <div class="chat-layout">
+
+        <!-- LEFT: Thread list -->
+        <div class="thread-list">
+          <div class="thread-list-header">💬 My Conversations</div>
+          <div id="thread-list-body">
+            <p class="no-threads">Loading conversations…</p>
+          </div>
+        </div>
+
+        <!-- RIGHT: Active chat panel -->
+        <div class="chat-panel">
+          <div class="chat-panel-header" id="chat-panel-header" style="display:none;">
+            <span class="buyer-name" id="panel-buyer-name"></span>
+            <span class="product-name" id="panel-product-name"></span>
+          </div>
+          <div id="chat-panel-messages" class="chat-panel-messages">
+            <div class="empty-state">
+              <span>💬</span>
+              <p>Select a conversation to start chatting</p>
+            </div>
+          </div>
+          <form id="chat-panel-form" class="chat-panel-form" style="display:none;">
+            <input type="text" id="panel-chat-input" placeholder="Type a reply…" autocomplete="off" required />
+            <button type="submit" class="primary-btn">Send</button>
+          </form>
+        </div>
+
+      </div>
+    </main>
+
+    <script src="http://localhost:5000/socket.io/socket.io.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/common.js"></script>
+    <script src="js/chat.js"></script>
+  </body>
+</html>
