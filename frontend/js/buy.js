@@ -48,10 +48,6 @@ async function loadProducts() {
           <div class="product-image-wrapper">
             <img src="${product.image}" alt="${product.name}" class="product-image" loading="lazy" />
             <span class="product-badge">${product.category}</span>
-            ${isOwner ? `
-              <div class="product-actions">
-                <button class="danger-btn" data-delete-id="${product._id}">Delete</button>
-              </div>` : ""}
           </div>
           <div class="product-content">
             <h3 class="product-title">${product.name}</h3>

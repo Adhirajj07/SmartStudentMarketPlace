@@ -686,6 +686,11 @@ main {
 
 .seller-name {
   color: #e5e7eb;
+  text-decoration: none;
+}
+
+.seller-name:hover {
+  color: skyblue;
 }
 
 .seller-rating {

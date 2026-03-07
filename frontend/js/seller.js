@@ -93,18 +93,22 @@ async function loadReviews() {
   const headingEl = document.getElementById("reviews-heading");
 
   try {
-    const { reviews, avgRating, totalReviews } = await fetchReviews(sellerEmail);
+    // Fetch reviews directly (public endpoint, no auth needed)
+    const response = await fetch("http://localhost:5000/api/reviews/" + encodeURIComponent(sellerEmail));
+    const { reviews, avgRating, totalReviews } = await response.json();
 
-    // Update profile card stars
-    if (avgRating) {
+    // Always update profile card
+    if (totalReviews > 0) {
       document.getElementById("seller-stars").textContent = renderStars(avgRating);
       document.getElementById("seller-avg-num").textContent = avgRating;
-      document.getElementById("seller-total-reviews").textContent = `(${totalReviews} review${totalReviews !== 1 ? "s" : ""})`;
+      document.getElementById("seller-total-reviews").textContent = "(" + totalReviews + " review" + (totalReviews !== 1 ? "s" : "") + ")";
     } else {
+      document.getElementById("seller-stars").textContent = "☆☆☆☆☆";
+      document.getElementById("seller-avg-num").textContent = "";
       document.getElementById("seller-total-reviews").textContent = "No reviews yet";
     }
 
-    headingEl.textContent = `Reviews (${totalReviews})`;
+    headingEl.textContent = "Reviews (" + totalReviews + ")";
 
     if (!reviews.length) {
       listEl.innerHTML = '<div class="no-reviews">⭐ No reviews yet.<br>Be the first to review this seller!</div>';
