@@ -34,7 +34,7 @@ async function loadProducts() {
 
   let products = [];
   try {
-    const products = await fetchProducts(category);
+    products = await fetchProducts(category);
 
     if (!products.length) {
       grid.innerHTML = '<p class="muted small">No products in this category yet.</p>';
@@ -80,7 +80,8 @@ async function loadProducts() {
   }
 
   // Get unique seller emails
-  const uniqueSellerEmails = [...new Set(products.map(p => p.sellerEmail))];
+  const uniqueSellerEmails = [...new Set(products.map(p => p.sellerEmail).filter(Boolean))];
+  console.log("Loading ratings for:", uniqueSellerEmails);
 
   // Fetch all seller ratings in parallel
   const ratingMap = {};
@@ -89,22 +90,22 @@ async function loadProducts() {
       const response = await fetch(
         "http://localhost:5000/api/reviews/" + encodeURIComponent(email)
       );
-      if (!response.ok) return;
       const data = await response.json();
+      console.log("Rating for", email, ":", data);
       ratingMap[email.toLowerCase()] = data;
-    } catch (e) {}
+    } catch (e) {
+      console.log("Rating fetch failed for", email, e);
+    }
   }));
 
-  // Update every product card with the seller's rating
+  // Update every product card with the seller's review count
   products.forEach(product => {
     const el = document.getElementById("rating-" + product._id);
     if (!el) return;
 
     const data = ratingMap[product.sellerEmail?.toLowerCase()];
-    let stars = "";
-
     if (data && data.totalReviews > 0) {
-      el.textContent = "⭐ " + data.totalReviews + " review" + (data.totalReviews > 1 ? "s" : "");
+      el.textContent = "⭐ " + data.totalReviews + (data.totalReviews === 1 ? " review" : " reviews");
       el.style.color = "#fde68a";
     } else {
       el.textContent = "0 reviews";
