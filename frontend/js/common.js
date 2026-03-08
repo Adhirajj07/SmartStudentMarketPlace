@@ -21,7 +21,7 @@ function clearSession() {
 // Redirect to login if not logged in
 function requireLogin() {
   if (!getToken() || !getCurrentUser()) {
-    window.location.href = "index.html";
+    window.location.href = "../index.html";
   }
 }
 
@@ -37,7 +37,7 @@ function initNav() {
 
   document.getElementById("logout-btn")?.addEventListener("click", () => {
     clearSession();
-    window.location.href = "index.html";
+    window.location.href = "../index.html";
   });
 }
 

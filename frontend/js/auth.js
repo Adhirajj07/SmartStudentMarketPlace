@@ -1,5 +1,7 @@
 // frontend/js/auth.js
-// Handles login and register forms on index.html
+// Handles login, register, and Google OAuth on index.html
+
+const GOOGLE_CLIENT_ID = "224675395582-o7l2qb4bl9c3hr8cjtondr8t010gqro7.apps.googleusercontent.com";
 
 function saveSession(userData) {
   localStorage.setItem("ssm_token", userData.token);
@@ -18,9 +20,40 @@ function saveSession(userData) {
 
 // If already logged in, skip to buy page
 if (localStorage.getItem("ssm_token")) {
-  window.location.href = "buy.html";
+  window.location.href = "html/buy.html";
 }
 
+// -------------------------------------------------------
+// Google Sign-In callback — must be on window to be global
+// -------------------------------------------------------
+window.handleGoogleResponse = async function(response) {
+  const googleError = document.getElementById("google-error");
+  googleError.textContent = "";
+
+  try {
+    const res = await fetch("http://localhost:5000/api/auth/google", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ credential: response.credential }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      googleError.textContent = data.message || "Google sign-in failed.";
+      return;
+    }
+
+    saveSession(data);
+    window.location.href = "html/buy.html";
+  } catch (err) {
+    googleError.textContent = "Could not connect to server. Please try again.";
+  }
+}
+
+// -------------------------------------------------------
+// Toggle Login / Register forms
+// -------------------------------------------------------
 const loginToggle = document.getElementById("show-login");
 const registerToggle = document.getElementById("show-register");
 const loginForm = document.getElementById("login-form");
@@ -44,33 +77,32 @@ registerToggle?.addEventListener("click", () => {
   document.getElementById("register-error").textContent = "";
 });
 
-// LOGIN
+// -------------------------------------------------------
+// Login
+// -------------------------------------------------------
 loginForm?.addEventListener("submit", async (e) => {
   e.preventDefault();
   const errorEl = document.getElementById("login-error");
   errorEl.textContent = "";
-
   try {
     const userData = await loginUser(
       document.getElementById("login-email").value,
       document.getElementById("login-password").value
     );
     saveSession(userData);
-    window.location.href = "buy.html"; // Redirect to Buy page after login
+    window.location.href = "html/buy.html";
   } catch (err) {
     errorEl.textContent = err.message;
   }
 });
 
-// REGISTER
+// -------------------------------------------------------
+// Register
+// -------------------------------------------------------
 registerForm?.addEventListener("submit", async (e) => {
   e.preventDefault();
   const errorEl = document.getElementById("register-error");
   errorEl.textContent = "";
-
-  const department = document.getElementById("register-department").value;
-  const year = document.getElementById("register-year").value;
-
   try {
     const userData = await registerUser({
       name: document.getElementById("register-name").value,
@@ -79,11 +111,11 @@ registerForm?.addEventListener("submit", async (e) => {
       rollNumber: document.getElementById("register-roll").value,
       universityRegisterNumber: document.getElementById("register-university-reg").value,
       dob: document.getElementById("register-dob").value,
-      department,
-      year,
+      department: document.getElementById("register-department").value,
+      year: document.getElementById("register-year").value,
     });
     saveSession(userData);
-    window.location.href = "buy.html"; // Redirect to Buy page after register
+    window.location.href = "html/buy.html";
   } catch (err) {
     errorEl.textContent = err.message;
   }
