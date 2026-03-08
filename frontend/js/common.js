@@ -83,3 +83,80 @@ function renderChatMessages(messages, currentUserEmail) {
 
   container.scrollTop = container.scrollHeight;
 }
+
+// -------------------------------------------------------
+// Unread notification dots for Chats and Community
+// -------------------------------------------------------
+
+// Mark a section as having unread messages
+function setUnread(section) {
+  localStorage.setItem("ssm_unread_" + section, "1");
+  updateNavDots();
+}
+
+// Clear unread for a section (called when user visits that page)
+function clearUnread(section) {
+  localStorage.removeItem("ssm_unread_" + section);
+  updateNavDots();
+}
+
+// Show/hide red dots on nav links
+function updateNavDots() {
+  const chatUnread = localStorage.getItem("ssm_unread_chat") === "1";
+  const communityUnread = localStorage.getItem("ssm_unread_community") === "1";
+
+  // Find nav buttons by their text content
+  document.querySelectorAll(".nav-link").forEach(btn => {
+    const text = btn.textContent.trim();
+
+    if (text.includes("Chats")) {
+      // Remove existing dot
+      btn.querySelector(".nav-dot")?.remove();
+      if (chatUnread) {
+        const dot = document.createElement("span");
+        dot.className = "nav-dot";
+        btn.appendChild(dot);
+      }
+    }
+
+    if (text.includes("Community")) {
+      btn.querySelector(".nav-dot")?.remove();
+      if (communityUnread) {
+        const dot = document.createElement("span");
+        dot.className = "nav-dot";
+        btn.appendChild(dot);
+      }
+    }
+  });
+}
+
+// Call on every page load to show existing unread dots
+document.addEventListener("DOMContentLoaded", updateNavDots);
+
+// -------------------------------------------------------
+// Theme toggle — dark / light
+// -------------------------------------------------------
+function initTheme() {
+  const saved = localStorage.getItem("ssm_theme") || "dark";
+  document.documentElement.setAttribute("data-theme", saved);
+  updateToggleBtn(saved);
+}
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute("data-theme") || "dark";
+  const next = current === "dark" ? "light" : "dark";
+  document.documentElement.setAttribute("data-theme", next);
+  localStorage.setItem("ssm_theme", next);
+  updateToggleBtn(next);
+}
+
+function updateToggleBtn(theme) {
+  const btn = document.getElementById("theme-toggle-btn");
+  if (btn) {
+    btn.textContent = theme === "dark" ? "☀️" : "🌙";
+    btn.title = theme === "dark" ? "Switch to light mode" : "Switch to dark mode";
+  }
+}
+
+// Init theme immediately on load (before render to avoid flash)
+initTheme();

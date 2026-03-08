@@ -13,6 +13,7 @@ const productRoutes = require("./routes/productRoutes");
 const chatRoutes = require("./routes/chatRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
 const aiCheckRoutes = require("./routes/aiCheckRoutes");
+const communityRoutes = require("./routes/communityRoutes");
 const Message = require("./models/Message");
 const Product = require("./models/Product");
 
@@ -29,6 +30,7 @@ app.use("/api/products", productRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/ai-check", aiCheckRoutes);
+app.use("/api/community", communityRoutes);
 
 app.get("/", (req, res) => res.json({ message: "Smart Student Marketplace API is running ✅" }));
 
@@ -52,14 +54,14 @@ io.on("connection", (socket) => {
         sellerEmail: product.sellerEmail.toLowerCase(),
         senderEmail: senderEmail.toLowerCase(),
         senderName,
-        text,
+        text, // plain text — Message model encrypts before saving
       });
       const room = `${productId}::${buyerEmail}`;
       io.to(room).emit("receive_message", {
         _id: message._id, productId, buyerEmail,
         senderEmail: message.senderEmail,
         senderName: message.senderName,
-        text: message.text,
+        text: text, // emit original plain text, not the encrypted version
         createdAt: message.createdAt,
       });
     } catch (error) {
@@ -67,6 +69,10 @@ io.on("connection", (socket) => {
     }
   });
 
+  socket.on("community_join", () => socket.join("community"));
+  socket.on("community_message", (msg) => io.to("community").emit("community_message", msg));
+  socket.on("community_like", (data) => io.to("community").emit("community_like", data));
+  socket.on("community_delete", (data) => io.to("community").emit("community_delete", data));
   socket.on("disconnect", () => console.log(`🔌 Socket disconnected: ${socket.id}`));
 });
 

@@ -5,6 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Seller Profile — Smart Student Marketplace</title>
     <link rel="stylesheet" href="css/styles.css" />
+  <script>
+    // Apply theme immediately to prevent flash
+    (function() {
+      const t = localStorage.getItem("ssm_theme") || "dark";
+      document.documentElement.setAttribute("data-theme", t);
+    })();
+  </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -149,10 +156,12 @@
         <button class="nav-link" onclick="location.href='buy.html'">Buy</button>
         <button class="nav-link" onclick="location.href='sell.html'">Sell</button>
         <button class="nav-link" onclick="location.href='chat.html'">💬 Chats</button>
+        <button class="nav-link" onclick="location.href='community.html'">🌐 Community</button>
         <button class="nav-link" onclick="location.href='profile.html'">Profile</button>
       </nav>
       <div class="nav-right">
         <span id="current-user-email" class="nav-user"></span>
+        <button id="theme-toggle-btn" class="theme-toggle" onclick="toggleTheme()">☀️</button>
         <button id="logout-btn" class="ghost-btn">Logout</button>
       </div>
     </header>

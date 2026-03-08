@@ -5,6 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Buy — Smart Student Marketplace</title>
     <link rel="stylesheet" href="css/styles.css" />
+  <script>
+    // Apply theme immediately to prevent flash
+    (function() {
+      const t = localStorage.getItem("ssm_theme") || "dark";
+      document.documentElement.setAttribute("data-theme", t);
+    })();
+  </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -164,10 +171,12 @@
         <button class="nav-link active" onclick="location.href='buy.html'">Buy</button>
         <button class="nav-link" onclick="location.href='sell.html'">Sell</button>
         <button class="nav-link" onclick="location.href='chat.html'">💬 Chats</button>
+        <button class="nav-link" onclick="location.href='community.html'">🌐 Community</button>
         <button class="nav-link" onclick="location.href='profile.html'">Profile</button>
       </nav>
       <div class="nav-right">
         <span id="current-user-email" class="nav-user"></span>
+        <button id="theme-toggle-btn" class="theme-toggle" onclick="toggleTheme()">☀️</button>
         <button id="logout-btn" class="ghost-btn">Logout</button>
       </div>
     </header>
@@ -283,27 +292,7 @@
 
     </main>
 
-    <!-- Chat Overlay -->
-    <div id="chat-overlay" class="chat-overlay hidden" aria-hidden="true">
-      <div class="chat-window">
-        <div class="chat-header">
-          <div class="chat-header-main">
-            <span id="chat-product-name"></span>
-            <span id="chat-seller-name" class="muted small"></span>
-          </div>
-          <button id="chat-close" class="icon-btn" aria-label="Close chat">✕</button>
-        </div>
-        <div id="chat-messages" class="chat-messages">
-          <p class="muted small">Loading messages…</p>
-        </div>
-        <form id="chat-form" class="chat-input-row">
-          <input type="text" id="chat-input" placeholder="Type a message to the seller..." autocomplete="off" required />
-          <button type="submit" class="primary-btn">Send</button>
-        </form>
-      </div>
-    </div>
 
-    <script src="http://localhost:5000/socket.io/socket.io.js"></script>
     <script src="js/api.js"></script>
     <script src="js/common.js"></script>
     <script src="js/buy.js"></script>

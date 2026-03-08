@@ -1,7 +1,8 @@
 // frontend/js/chat.js
-// Seller's chat inbox — shows all conversations and allows real-time replies
+// Chat page — works for both buyers and sellers
 
-initNav(); // from common.js
+initNav();
+clearUnread("chat");
 
 const currentUser = getCurrentUser();
 const socket = io("http://localhost:5000");
@@ -15,6 +16,7 @@ socket.on("connect", () => {
 
 // -------------------------------------------------------
 // Load all conversation threads for this user
+// (threads where they are buyer OR seller)
 // -------------------------------------------------------
 async function loadInbox() {
   const body = document.getElementById("thread-list-body");
@@ -22,43 +24,97 @@ async function loadInbox() {
 
   try {
     const token = getToken();
-    const response = await fetch(
+
+    // Fetch threads where user is seller
+    const sellerRes = await fetch(
       `http://localhost:5000/api/chat/inbox/${currentUser.email}`,
       { headers: { Authorization: `Bearer ${token}` } }
     );
-    const threads = await response.json();
+    const sellerThreads = await sellerRes.json();
 
-    if (!threads.length) {
-      body.innerHTML = '<p class="no-threads">No conversations yet.<br>Buyers will appear here when they message you.</p>';
+    // Fetch threads where user is buyer
+    const buyerRes = await fetch(
+      `http://localhost:5000/api/chat/buyer-inbox/${currentUser.email}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    const buyerThreads = await buyerRes.json();
+
+    // Merge and deduplicate by productId + buyerEmail
+    const seen = new Set();
+    const allThreads = [...sellerThreads, ...buyerThreads].filter(thread => {
+      const key = `${thread.productId}::${thread.buyerEmail}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
+    // Sort by latest message
+    allThreads.sort((a, b) => new Date(b.lastMessageTime) - new Date(a.lastMessageTime));
+
+    if (!allThreads.length) {
+      body.innerHTML = '<p class="no-threads">No conversations yet.<br>Chat with a seller from the Buy page!</p>';
       return;
     }
 
-    body.innerHTML = threads.map((thread) => `
-      <div class="thread-item"
-           data-product-id="${thread.productId}"
-           data-buyer-email="${thread.buyerEmail}"
-           data-product-name="${thread.productName}"
-           data-buyer-name="${thread.buyerEmail.split("@")[0]}">
-        <div class="thread-buyer">👤 ${thread.buyerEmail.split("@")[0]}</div>
-        <div class="thread-product">📦 ${thread.productName}</div>
-        <div class="thread-preview">${thread.lastMessage}</div>
-      </div>
-    `).join("");
+    body.innerHTML = allThreads.map((thread) => {
+      const isMe = thread.buyerEmail === currentUser.email;
+      const otherPerson = isMe ? thread.sellerEmail?.split("@")[0] : thread.buyerEmail?.split("@")[0];
+      return `
+        <div class="thread-item"
+             data-product-id="${thread.productId}"
+             data-buyer-email="${thread.buyerEmail}"
+             data-product-name="${thread.productName}"
+             data-other-person="${otherPerson}">
+          <div class="thread-buyer">👤 ${otherPerson}</div>
+          <div class="thread-product">📦 ${thread.productName}</div>
+          <div class="thread-preview">${thread.lastMessage}</div>
+        </div>
+      `;
+    }).join("");
 
     // Click a thread to open it
     body.querySelectorAll(".thread-item").forEach((item) => {
       item.addEventListener("click", () => {
         body.querySelectorAll(".thread-item").forEach((i) => i.classList.remove("active"));
         item.classList.add("active");
-
-        const productId = item.getAttribute("data-product-id");
-        const buyerEmail = item.getAttribute("data-buyer-email");
-        const productName = item.getAttribute("data-product-name");
-        const buyerName = item.getAttribute("data-buyer-name");
-
-        openThread(productId, buyerEmail, productName, buyerName);
+        openThread(
+          item.getAttribute("data-product-id"),
+          item.getAttribute("data-buyer-email"),
+          item.getAttribute("data-product-name"),
+          item.getAttribute("data-other-person")
+        );
       });
     });
+
+    // Auto-open thread from URL params (coming from buy.html)
+    const params = new URLSearchParams(window.location.search);
+    const paramProductId = params.get("productId");
+    const paramSellerEmail = params.get("sellerEmail");
+    const paramProductName = params.get("productName");
+
+    if (paramProductId && paramSellerEmail) {
+      const buyerEmail = currentUser.email;
+
+      // Find matching thread item or create a new one
+      const matchingItem = body.querySelector(`[data-product-id="${paramProductId}"][data-buyer-email="${buyerEmail}"]`);
+      if (matchingItem) {
+        matchingItem.classList.add("active");
+        openThread(
+          paramProductId,
+          buyerEmail,
+          decodeURIComponent(paramProductName || ""),
+          paramSellerEmail.split("@")[0]
+        );
+      } else {
+        // New conversation — open empty thread
+        openThread(
+          paramProductId,
+          buyerEmail,
+          decodeURIComponent(paramProductName || ""),
+          paramSellerEmail.split("@")[0]
+        );
+      }
+    }
 
   } catch (err) {
     body.innerHTML = `<p class="no-threads">Could not load conversations: ${err.message}</p>`;
@@ -68,28 +124,21 @@ async function loadInbox() {
 // -------------------------------------------------------
 // Open a specific chat thread
 // -------------------------------------------------------
-async function openThread(productId, buyerEmail, productName, buyerName) {
-  // Leave previous room if any
+async function openThread(productId, buyerEmail, productName, otherPersonName) {
   if (activeProductId && activeBuyerEmail) {
-    socket.emit("leave_room", {
-      productId: activeProductId,
-      buyerEmail: activeBuyerEmail,
-    });
+    socket.emit("leave_room", { productId: activeProductId, buyerEmail: activeBuyerEmail });
   }
 
   activeProductId = productId;
   activeBuyerEmail = buyerEmail;
 
-  // Update panel header
   document.getElementById("chat-panel-header").style.display = "flex";
-  document.getElementById("panel-buyer-name").textContent = `👤 ${buyerName}`;
+  document.getElementById("panel-buyer-name").textContent = `👤 ${otherPersonName}`;
   document.getElementById("panel-product-name").textContent = `📦 ${productName}`;
   document.getElementById("chat-panel-form").style.display = "flex";
 
-  // Join Socket.io room
   socket.emit("join_room", { productId, buyerEmail });
 
-  // Load message history
   await loadThreadMessages(productId, buyerEmail);
 }
 
@@ -114,11 +163,11 @@ async function loadThreadMessages(productId, buyerEmail) {
 }
 
 // -------------------------------------------------------
-// Render messages in the panel
+// Render messages
 // -------------------------------------------------------
 function renderMessages(messages, container) {
   if (!messages.length) {
-    container.innerHTML = '<p class="muted small" style="padding:1rem;">No messages yet.</p>';
+    container.innerHTML = '<p class="muted small" style="padding:1rem;">No messages yet. Say hello! 👋</p>';
     return;
   }
 
@@ -136,15 +185,10 @@ function renderMessages(messages, container) {
 }
 
 // -------------------------------------------------------
-// Receive real-time message via Socket.io
+// Receive real-time message
 // -------------------------------------------------------
 socket.on("receive_message", (msg) => {
-  // Only show if this message belongs to the active thread
-  if (
-    msg.productId !== activeProductId ||
-    msg.buyerEmail !== activeBuyerEmail
-  ) {
-    // Refresh inbox to update preview
+  if (msg.productId !== activeProductId || msg.buyerEmail !== activeBuyerEmail) {
     loadInbox();
     return;
   }
@@ -165,7 +209,7 @@ socket.on("receive_message", (msg) => {
 });
 
 // -------------------------------------------------------
-// Send a reply via Socket.io
+// Send a message
 // -------------------------------------------------------
 document.getElementById("chat-panel-form")?.addEventListener("submit", (e) => {
   e.preventDefault();

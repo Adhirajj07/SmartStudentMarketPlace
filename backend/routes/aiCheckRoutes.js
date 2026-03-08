@@ -3,67 +3,85 @@ const express = require("express");
 const router = express.Router();
 const { protect } = require("../middleware/authMiddleware");
 
-router.post("/", protect, async (req, res) => {
-  const { name, description, category } = req.body;
+// Rotate through multiple Gemini API keys
+const GEMINI_KEYS = [
+  process.env.GEMINI_API_KEY_1,
+  process.env.GEMINI_API_KEY_2,
+  process.env.GEMINI_API_KEY_3,
+  process.env.GEMINI_API_KEY_4,
+  process.env.GEMINI_API_KEY_5,
+  process.env.GEMINI_API_KEY_6,
+].filter(Boolean); // removes any undefined keys
 
-  if (!name || !description) {
-    return res.status(400).json({ message: "Name and description are required." });
-  }
+let currentKeyIndex = 0;
 
-  try {
-    const prompt = `You are a product safety checker for a college marketplace in India.
-Check if this product is illegal or inappropriate:
-Product: ${name}
-Category: ${category}
-Description: ${description}
+async function callGemini(prompt) {
+  const totalKeys = GEMINI_KEYS.length;
 
-Legal: books, electronics, stationery, hostel items, accessories, gadgets, clothes.
-Illegal: drugs, weapons, alcohol, tobacco, adult content, pirated items, stolen goods.
-
-Respond with ONLY valid JSON, nothing else:
-{"allowed":true}
-OR
-{"allowed":false,"reason":"short reason"}`;
+  for (let attempt = 0; attempt < totalKeys; attempt++) {
+    const key = GEMINI_KEYS[currentKeyIndex];
 
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0, maxOutputTokens: 500 }
+          generationConfig: { temperature: 0, maxOutputTokens: 1024 }
         })
       }
     );
 
     const data = await response.json();
-    console.log("Full Gemini response:", JSON.stringify(data, null, 2));
 
+    // If rate limited, rotate to next key and retry
+    if (!response.ok && data?.error?.code === 429) {
+      console.log(`Gemini key ${currentKeyIndex + 1} rate limited — trying next key...`);
+      currentKeyIndex = (currentKeyIndex + 1) % totalKeys;
+      continue;
+    }
+
+    // Any other API error
     if (!response.ok) {
-      console.error("Gemini API error:", data);
-      return res.json({ allowed: false, reason: "Safety check failed. Please try again." });
+      console.error(`Gemini API error on key ${currentKeyIndex + 1}:`, data);
+      throw new Error("Gemini API error");
     }
 
-    // Safely extract text
-    const candidate = data?.candidates?.[0];
-    const raw = candidate?.content?.parts?.[0]?.text?.trim() || "";
-    console.log("Gemini text:", raw);
+    // Success — keep using this key next time
+    return data;
+  }
 
-    if (!raw) {
-      // Check finishReason
-      console.log("Finish reason:", candidate?.finishReason);
-      // If no text but model responded, default based on finish reason
-      if (candidate?.finishReason === "STOP") {
-        return res.json({ allowed: true });
-      }
-      return res.json({ allowed: false, reason: "Safety check failed. Please try again." });
-    }
+  // All keys exhausted
+  throw new Error("All Gemini API keys are rate limited. Please try again later.");
+}
 
-    // Extract JSON from response
-    const jsonMatch = raw.match(/\{[\s\S]*\}/);
+router.post("/", protect, async (req, res) => {
+  const { name, description, category } = req.body;
+  if (!name || !description) {
+    return res.status(400).json({ message: "Name and description are required." });
+  }
+
+  try {
+    const prompt = `You are a safety checker for a college marketplace in India.
+Is this content legal and appropriate for college students?
+Name: ${name}
+Category: ${category}
+Description: ${description}
+
+Reply with ONLY a JSON object, no markdown, no backticks:
+{"allowed":true}
+or
+{"allowed":false,"reason":"short reason"}`;
+
+    const data = await callGemini(prompt);
+
+    let raw = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    raw = raw.replace(/```json/gi, "").replace(/```/g, "").trim();
+
+    const jsonMatch = raw.match(/\{[\s\S]*?\}/);
     if (!jsonMatch) {
-      return res.json({ allowed: false, reason: "Safety check failed. Please try again." });
+      return res.status(500).json({ message: "Unexpected AI response. Please try again." });
     }
 
     const result = JSON.parse(jsonMatch[0]);
@@ -71,7 +89,7 @@ OR
 
   } catch (error) {
     console.error("AI check error:", error.message);
-    res.json({ allowed: false, reason: "Safety check unavailable. Please try again." });
+    return res.status(503).json({ message: error.message || "AI check unavailable. Please try again later." });
   }
 });
 

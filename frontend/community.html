@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Community — Smart Student Marketplace</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <script>
+    // Apply theme immediately to prevent flash
+    (function() {
+      const t = localStorage.getItem("ssm_theme") || "dark";
+      document.documentElement.setAttribute("data-theme", t);
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    .community-page {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 70px);
+    }
+
+    .community-header {
+      margin-bottom: 1rem;
+    }
+    .community-header h2 { font-size: 1.1rem; font-weight: 700; }
+    .community-header p { font-size: 0.82rem; color: #9ca3af; }
+    .online-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: rgba(16,185,129,0.1);
+      border: 1px solid rgba(16,185,129,0.3);
+      color: #6ee7b7;
+      font-size: 0.75rem;
+      padding: 0.2rem 0.7rem;
+      border-radius: 999px;
+      margin-left: 0.5rem;
+    }
+    .online-dot {
+      width: 7px; height: 7px;
+      background: #10b981;
+      border-radius: 50%;
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* Messages container */
+    .messages-container {
+      flex: 1;
+      overflow-y: auto;
+      background: rgba(2,6,23,0.6);
+      border: 1px solid rgba(148,163,184,0.2);
+      border-radius: 1.2rem;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      scroll-behavior: smooth;
+    }
+    .messages-container::-webkit-scrollbar { width: 4px; }
+    .messages-container::-webkit-scrollbar-track { background: transparent; }
+    .messages-container::-webkit-scrollbar-thumb { background: rgba(148,163,184,0.3); border-radius: 2px; }
+
+    /* Message bubble */
+    .msg-bubble {
+      display: flex;
+      gap: 0.7rem;
+      align-items: flex-start;
+      animation: fadeIn 0.2s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+    .msg-bubble.own { flex-direction: row-reverse; }
+
+    .msg-avatar {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #4f46e5, #818cf8);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.85rem; font-weight: 700; color: #fff;
+      flex-shrink: 0;
+    }
+    .msg-bubble.own .msg-avatar {
+      background: linear-gradient(135deg, #059669, #34d399);
+    }
+
+    .msg-body { max-width: 75%; }
+    .msg-meta {
+      display: flex; align-items: center; gap: 0.4rem;
+      margin-bottom: 0.2rem;
+      flex-wrap: wrap;
+    }
+    .msg-bubble.own .msg-meta { flex-direction: row-reverse; }
+    .msg-name { font-size: 0.78rem; font-weight: 600; color: #e5e7eb; }
+    .msg-dept { font-size: 0.7rem; color: #a5b4fc; }
+    .msg-time { font-size: 0.68rem; color: #6b7280; }
+
+    .msg-text {
+      background: rgba(15,23,42,0.9);
+      border: 1px solid rgba(148,163,184,0.2);
+      border-radius: 0 1rem 1rem 1rem;
+      padding: 0.55rem 0.8rem;
+      font-size: 0.88rem;
+      color: #e5e7eb;
+      line-height: 1.5;
+      word-break: break-word;
+    }
+    .msg-bubble.own .msg-text {
+      background: rgba(79,70,229,0.2);
+      border-color: rgba(99,102,241,0.4);
+      border-radius: 1rem 0 1rem 1rem;
+    }
+
+    .msg-actions {
+      display: flex; align-items: center; gap: 0.5rem;
+      margin-top: 0.3rem;
+    }
+    .msg-bubble.own .msg-actions { flex-direction: row-reverse; }
+
+    .like-btn {
+      background: none; border: none; cursor: pointer;
+      font-size: 0.78rem; color: #6b7280;
+      display: flex; align-items: center; gap: 0.25rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 999px;
+      transition: all 0.12s;
+    }
+    .like-btn:hover { background: rgba(239,68,68,0.1); color: #fca5a5; }
+    .like-btn.liked { color: #f87171; }
+
+    .delete-btn {
+      background: none; border: none; cursor: pointer;
+      font-size: 0.72rem; color: #6b7280;
+      padding: 0.2rem 0.4rem;
+      border-radius: 999px;
+      transition: all 0.12s;
+    }
+    .delete-btn:hover { background: rgba(239,68,68,0.1); color: #fca5a5; }
+
+    .deleted-msg {
+      font-size: 0.8rem; color: #6b7280;
+      font-style: italic; padding: 0.3rem 0;
+    }
+
+    /* Input area */
+    .community-input-area {
+      display: flex; gap: 0.6rem; align-items: flex-end;
+    }
+    .community-textarea {
+      flex: 1;
+      background: rgba(15,23,42,0.9);
+      border: 1px solid rgba(148,163,184,0.4);
+      border-radius: 1rem;
+      padding: 0.7rem 1rem;
+      color: #e5e7eb;
+      font-family: inherit;
+      font-size: 0.88rem;
+      resize: none;
+      outline: none;
+      max-height: 100px;
+      transition: border-color 0.12s;
+    }
+    .community-textarea:focus { border-color: #6366f1; }
+    .community-textarea::placeholder { color: #4b5563; }
+
+    .send-btn {
+      width: 42px; height: 42px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #4f46e5, #818cf8);
+      border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem;
+      transition: transform 0.1s, opacity 0.1s;
+      flex-shrink: 0;
+    }
+    .send-btn:hover { transform: scale(1.08); }
+    .send-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+    .input-status {
+      font-size: 0.78rem;
+      color: #fca5a5;
+      margin-top: 0.3rem;
+      min-height: 1.2em;
+    }
+
+    .empty-community {
+      text-align: center; padding: 3rem 1rem;
+      color: #4b5563; font-size: 0.88rem;
+    }
+    .empty-community .emoji { font-size: 2.5rem; margin-bottom: 0.5rem; }
+  </style>
+</head>
+<body>
+  <header class="top-nav">
+    <div class="nav-left">
+      <div class="brand-logo small">SSM</div>
+      <div class="nav-title-group">
+        <span class="nav-title">Smart Student Marketplace</span>
+        <span class="nav-subtitle">For your campus community</span>
+      </div>
+    </div>
+    <nav class="nav-center">
+      <button class="nav-link" onclick="location.href='buy.html'">Buy</button>
+      <button class="nav-link" onclick="location.href='sell.html'">Sell</button>
+      <button class="nav-link" onclick="location.href='chat.html'">💬 Chats</button>
+      <button class="nav-link active" onclick="location.href='community.html'">🌐 Community</button>
+      <button class="nav-link" onclick="location.href='profile.html'">Profile</button>
+    </nav>
+    <div class="nav-right">
+      <span id="current-user-email" class="nav-user"></span>
+      <button id="theme-toggle-btn" class="theme-toggle" onclick="toggleTheme()">☀️</button>
+        <button id="logout-btn" class="ghost-btn">Logout</button>
+    </div>
+  </header>
+
+  <div class="community-page">
+    <div class="community-header">
+      <h2>
+        🌐 Campus Community
+        <span class="online-badge"><span class="online-dot"></span> Live</span>
+      </h2>
+      <p>Share your needs, ask questions, and connect with fellow students on campus.</p>
+    </div>
+
+    <div class="messages-container" id="messages-container">
+      <div class="empty-community">
+        <div class="emoji">💬</div>
+        <p>Loading messages…</p>
+      </div>
+    </div>
+
+    <div>
+      <div class="community-input-area">
+        <textarea
+          class="community-textarea"
+          id="community-input"
+          placeholder="Share something with your campus community…"
+          rows="1"
+          maxlength="300"
+        ></textarea>
+        <button class="send-btn" id="send-btn" title="Send">➤</button>
+      </div>
+      <p class="input-status" id="input-status"></p>
+    </div>
+  </div>
+
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/community.js"></script>
+</body>
+</html>

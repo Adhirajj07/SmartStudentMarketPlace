@@ -1,28 +1,15 @@
 // frontend/js/buy.js
-// Buy page logic with real-time Socket.io chat
+// Buy page logic — chat button redirects to chat.html
 
 initNav(); // from common.js
 
 const currentUser = getCurrentUser();
-let activeChatProductId = null;
-let activeBuyerEmail = null;
 
 // Show user's first name in the hero greeting
 const greetingEl = document.getElementById("user-greeting-name");
 if (greetingEl && currentUser?.name) {
-  greetingEl.textContent = currentUser.name.split(" ")[0]; // First name only
+  greetingEl.textContent = currentUser.name.split(" ")[0];
 }
-
-// Connect to Socket.io server
-const socket = io("http://localhost:5000");
-
-socket.on("connect", () => {
-  console.log("✅ Connected to chat server:", socket.id);
-});
-
-socket.on("connect_error", (err) => {
-  console.error("❌ Socket connection error:", err.message);
-});
 
 // -------------------------------------------------------
 // Load and render products
@@ -48,6 +35,10 @@ async function loadProducts() {
           <div class="product-image-wrapper">
             <img src="${product.image}" alt="${product.name}" class="product-image" loading="lazy" />
             <span class="product-badge">${product.category}</span>
+            ${isOwner ? `
+              <div class="product-actions">
+                <button class="danger-btn" data-delete-id="${product._id}">Delete</button>
+              </div>` : ""}
           </div>
           <div class="product-content">
             <h3 class="product-title">${product.name}</h3>
@@ -62,7 +53,11 @@ async function loadProducts() {
                 <span class="seller-rating" id="rating-${product._id}" style="color:#6b7280;">0 reviews</span>
               </div>
               ${!isOwner ? `
-                <button class="chat-btn" data-chat-id="${product._id}" data-seller="${product.sellerName}" data-seller-email="${product.sellerEmail}">
+                <button class="chat-btn"
+                  data-chat-id="${product._id}"
+                  data-seller-email="${product.sellerEmail}"
+                  data-seller-name="${product.sellerName}"
+                  data-product-name="${product.name}">
                   <span>💬</span><span>Chat</span>
                 </button>` : ""}
             </div>
@@ -75,30 +70,20 @@ async function loadProducts() {
     return;
   }
 
-  // Get unique seller emails
+  // Fetch seller ratings
   const uniqueSellerEmails = [...new Set(products.map(p => p.sellerEmail).filter(Boolean))];
-  console.log("Loading ratings for:", uniqueSellerEmails);
-
-  // Fetch all seller ratings in parallel
   const ratingMap = {};
   await Promise.all(uniqueSellerEmails.map(async (email) => {
     try {
-      const response = await fetch(
-        "http://localhost:5000/api/reviews/" + encodeURIComponent(email)
-      );
+      const response = await fetch("http://localhost:5000/api/reviews/" + encodeURIComponent(email));
       const data = await response.json();
-      console.log("Rating for", email, ":", data);
       ratingMap[email.toLowerCase()] = data;
-    } catch (e) {
-      console.log("Rating fetch failed for", email, e);
-    }
+    } catch (e) {}
   }));
 
-  // Update every product card with the seller's review count
   products.forEach(product => {
     const el = document.getElementById("rating-" + product._id);
     if (!el) return;
-
     const data = ratingMap[product.sellerEmail?.toLowerCase()];
     if (data && data.totalReviews > 0) {
       el.textContent = "⭐ " + data.totalReviews + (data.totalReviews === 1 ? " review" : " reviews");
@@ -129,136 +114,13 @@ document.getElementById("products-grid")?.addEventListener("click", async (e) =>
     return;
   }
 
-  // Chat button
+  // Chat button — redirect to chat.html with query params
   const chatBtn = e.target.closest("[data-chat-id]");
   if (chatBtn) {
     const productId = chatBtn.getAttribute("data-chat-id");
-    const sellerName = chatBtn.getAttribute("data-seller");
-    openChat(productId, sellerName);
-  }
-});
-
-// -------------------------------------------------------
-// REAL-TIME CHAT
-// -------------------------------------------------------
-
-// Open chat popup and join the Socket.io room
-async function openChat(productId, sellerName) {
-  if (!currentUser) return;
-
-  activeChatProductId = productId;
-  activeBuyerEmail = currentUser.email;
-
-  // Update chat header
-  const products = await fetchProducts();
-  const product = products.find((p) => p._id === productId);
-  if (!product) return;
-
-  document.getElementById("chat-product-name").textContent = product.name;
-  document.getElementById("chat-seller-name").textContent = `Seller: ${product.sellerName}`;
-
-  // Join the Socket.io room for this product + buyer
-  socket.emit("join_room", {
-    productId,
-    buyerEmail: currentUser.email,
-  });
-
-  // Load existing message history from MongoDB
-  await loadChatHistory(productId, currentUser.email);
-
-  // Show the chat overlay
-  document.getElementById("chat-overlay").classList.remove("hidden");
-}
-
-// Fetch past messages from the backend
-async function loadChatHistory(productId, buyerEmail) {
-  const container = document.getElementById("chat-messages");
-  container.innerHTML = '<p class="muted small">Loading messages…</p>';
-
-  try {
-    const token = getToken();
-    const response = await fetch(
-      `http://localhost:5000/api/chat/${productId}/${buyerEmail}`,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-    const messages = await response.json();
-    renderMessages(messages);
-  } catch (err) {
-    container.innerHTML = '<p class="muted small">Could not load messages.</p>';
-  }
-}
-
-// Render messages in the chat window
-function renderMessages(messages) {
-  const container = document.getElementById("chat-messages");
-
-  if (!messages.length) {
-    container.innerHTML = '<p class="muted small">No messages yet. Say hello! 👋</p>';
-    return;
-  }
-
-  container.innerHTML = messages.map((msg) => {
-    const isMe = msg.senderEmail === currentUser.email;
-    return `
-      <div class="chat-message ${isMe ? "me" : "them"}">
-        <div>${msg.text}</div>
-        <div class="chat-meta">${isMe ? "You" : msg.senderName}</div>
-      </div>
-    `;
-  }).join("");
-
-  container.scrollTop = container.scrollHeight;
-}
-
-// Receive real-time message from Socket.io
-socket.on("receive_message", (msg) => {
-  const container = document.getElementById("chat-messages");
-
-  // Remove "no messages" placeholder if present
-  const placeholder = container.querySelector("p");
-  if (placeholder) placeholder.remove();
-
-  const isMe = msg.senderEmail === currentUser.email;
-  const div = document.createElement("div");
-  div.className = `chat-message ${isMe ? "me" : "them"}`;
-  div.innerHTML = `
-    <div>${msg.text}</div>
-    <div class="chat-meta">${isMe ? "You" : msg.senderName}</div>
-  `;
-  container.appendChild(div);
-  container.scrollTop = container.scrollHeight;
-});
-
-// Send message via Socket.io
-document.getElementById("chat-form")?.addEventListener("submit", (e) => {
-  e.preventDefault();
-  const input = document.getElementById("chat-input");
-  const text = input.value.trim();
-  if (!text || !activeChatProductId) return;
-
-  // Emit the message to the server
-  socket.emit("send_message", {
-    productId: activeChatProductId,
-    buyerEmail: activeBuyerEmail,
-    senderEmail: currentUser.email,
-    senderName: currentUser.name || currentUser.email,
-    text,
-  });
-
-  input.value = "";
-});
-
-// Close chat
-document.getElementById("chat-close")?.addEventListener("click", () => {
-  activeChatProductId = null;
-  activeBuyerEmail = null;
-  document.getElementById("chat-overlay").classList.add("hidden");
-});
-
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") {
-    activeChatProductId = null;
-    document.getElementById("chat-overlay")?.classList.add("hidden");
+    const sellerEmail = chatBtn.getAttribute("data-seller-email");
+    const productName = chatBtn.getAttribute("data-product-name");
+    location.href = `chat.html?productId=${productId}&sellerEmail=${encodeURIComponent(sellerEmail)}&productName=${encodeURIComponent(productName)}`;
   }
 });
 
