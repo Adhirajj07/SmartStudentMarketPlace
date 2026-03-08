@@ -18,10 +18,15 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
     },
+    // Optional — Google users don't have a password
     password: {
       type: String,
-      required: [true, "Password is required"],
-      minlength: [6, "Password must be at least 6 characters"],
+      required: false,
+      default: null,
+    },
+    googleAuth: {
+      type: Boolean,
+      default: false,
     },
     rollNumber: {
       type: String,
@@ -37,13 +42,11 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, "Date of birth is required"],
     },
-    // NEW: Department e.g. "BCA"
     department: {
       type: String,
       required: [true, "Department is required"],
       trim: true,
     },
-    // NEW: Year e.g. "3rd Year"
     year: {
       type: String,
       required: [true, "Year is required"],
@@ -51,7 +54,7 @@ const userSchema = new mongoose.Schema(
     },
     isVerifiedEmail: {
       type: Boolean,
-      default: true, // We trust college email domain as verification
+      default: true,
     },
     isVerifiedStudent: {
       type: Boolean,
@@ -59,15 +62,14 @@ const userSchema = new mongoose.Schema(
     },
   },
   {
-    timestamps: true, // Automatically adds createdAt and updatedAt fields
+    timestamps: true,
   }
 );
 
-// ----- MIDDLEWARE: Hash password before saving -----
-// This runs automatically before every .save() call
+// ----- MIDDLEWARE: Hash password before saving (only if password exists) -----
 userSchema.pre("save", async function (next) {
-  // Only hash if password was changed (or it's a new user)
-  if (!this.isModified("password")) return next();
+  // Skip if no password (Google users) or password not modified
+  if (!this.password || !this.isModified("password")) return next();
 
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
@@ -76,6 +78,7 @@ userSchema.pre("save", async function (next) {
 
 // ----- METHOD: Compare entered password with hashed one -----
 userSchema.methods.matchPassword = async function (enteredPassword) {
+  if (!this.password) return false;
   return await bcrypt.compare(enteredPassword, this.password);
 };
 

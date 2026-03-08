@@ -24,56 +24,14 @@
         gap: 0.8rem;
         margin-bottom: 0.5rem;
       }
-      .google-signin-btn {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.65rem;
-        width: 100%;
-        padding: 0.65rem 1rem;
-        border-radius: 999px;
-        border: 1px solid rgba(148,163,184,0.4);
-        background: rgba(15,23,42,0.7);
-        color: #e5e7eb;
-        font-size: 0.9rem;
-        font-weight: 500;
-        cursor: pointer;
-        transition: background 0.12s, border-color 0.12s;
-        font-family: inherit;
-      }
-      .google-signin-btn:hover {
-        background: rgba(255,255,255,0.06);
-        border-color: rgba(148,163,184,0.7);
-      }
-      .google-signin-btn img {
-        width: 20px; height: 20px;
-      }
-      .or-divider {
-        display: flex;
-        align-items: center;
-        gap: 0.7rem;
-        width: 100%;
-        color: #6b7280;
+      .google-hint {
         font-size: 0.8rem;
+        color: #6b7280;
+        text-align: center;
+        margin-top: 0.2rem;
       }
-      .or-divider::before, .or-divider::after {
-        content: "";
-        flex: 1;
-        height: 1px;
-        background: rgba(148,163,184,0.2);
-      }
-      [data-theme="light"] .google-signin-btn {
-        background: #ffffff !important;
-        border-color: #d1d5db !important;
-        color: #374151 !important;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.1) !important;
-      }
-      [data-theme="light"] .google-signin-btn:hover {
-        background: #f9fafb !important;
-        border-color: #9ca3af !important;
-      }
-      [data-theme="light"] .or-divider {
-        color: #9ca3af !important;
+      [data-theme="light"] .google-hint {
+        color: #9ca3af;
       }
     </style>
   </head>
@@ -88,13 +46,8 @@
           </div>
         </div>
 
-        <div class="auth-toggle">
-          <button id="show-login" class="active">Login</button>
-          <button id="show-register">Register</button>
-        </div>
-
         <!-- GOOGLE SIGN IN -->
-        <div class="google-btn-wrapper">
+        <div class="google-btn-wrapper" id="google-section">
           <div id="g_id_onload"
             data-client_id="224675395582-o7l2qb4bl9c3hr8cjtondr8t010gqro7.apps.googleusercontent.com"
             data-callback="handleGoogleResponse"
@@ -109,58 +62,30 @@
             data-logo_alignment="left"
             data-width="340">
           </div>
+          <p class="google-hint">Use your <strong>@amjaincollege.edu.in</strong> Google account</p>
           <p id="google-error" class="error-text" style="text-align:center;"></p>
         </div>
 
-        <div class="or-divider">or</div>
-
-        <!-- LOGIN FORM -->
-        <form id="login-form" class="auth-form">
-          <h2>Welcome back</h2>
-          <label>
-            College email
-            <input type="email" id="login-email" placeholder="you@amjaincollege.edu.in" required />
-          </label>
-          <label>
-            Password
-            <input type="password" id="login-password" placeholder="••••••••" required />
-          </label>
-          <p id="login-error" class="error-text" aria-live="polite"></p>
-          <button type="submit" class="primary-btn full-width">Login</button>
-        </form>
-
-        <!-- REGISTER FORM -->
-        <form id="register-form" class="auth-form hidden">
-          <h2>Create your campus account</h2>
-          <label>
-            Full Name
-            <input type="text" id="register-name" placeholder="Your full name" required />
-          </label>
-          <label>
-            College email
-            <input type="email" id="register-email" placeholder="you@amjaincollege.edu.in" required />
-          </label>
-          <label>
-            Password
-            <input type="password" id="register-password" placeholder="Create a strong password" minlength="6" required />
-          </label>
+        <!-- COMPLETE PROFILE FORM (shown after Google sign-in for new users only) -->
+        <form id="complete-profile-form" class="auth-form hidden">
+          <h2>Complete your profile</h2>
+          <p class="muted">A few more details to verify your student identity.</p>
           <label>
             College Roll Number
-            <input type="text" id="register-roll" placeholder="e.g. 22CSE123" required />
+            <input type="text" id="cp-roll" placeholder="e.g. 22CSE123" required />
           </label>
           <label>
             University Register Number
-            <input type="text" id="register-university-reg" placeholder="e.g. URN123456" required />
+            <input type="text" id="cp-university-reg" placeholder="e.g. URN123456" required />
           </label>
           <label>
             Date of Birth
-            <input type="date" id="register-dob" required />
+            <input type="date" id="cp-dob" required />
           </label>
-
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.8rem;">
             <label>
               Department
-              <select id="register-department" required>
+              <select id="cp-department" required>
                 <option value="">Select dept</option>
                 <option value="BCA">BCA</option>
                 <option value="BSc CS">BSc CS</option>
@@ -177,7 +102,7 @@
             </label>
             <label>
               Year
-              <select id="register-year" required>
+              <select id="cp-year" required>
                 <option value="">Select year</option>
                 <option value="1st Year">1st Year</option>
                 <option value="2nd Year">2nd Year</option>
@@ -186,13 +111,10 @@
               </select>
             </label>
           </div>
-
-          <p class="muted small">
-            Only official college email IDs are allowed (e.g. <code>@amjaincollege.edu.in</code>).
-          </p>
-          <p id="register-error" class="error-text" aria-live="polite"></p>
-          <button type="submit" class="primary-btn full-width">Register</button>
+          <p id="complete-profile-error" class="error-text" aria-live="polite"></p>
+          <button type="submit" class="primary-btn full-width">Save &amp; Continue</button>
         </form>
+
       </div>
     </div>
 

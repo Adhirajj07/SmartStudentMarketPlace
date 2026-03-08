@@ -1,7 +1,5 @@
 // frontend/js/auth.js
-// Handles login, register, and Google OAuth on index.html
-
-const GOOGLE_CLIENT_ID = "224675395582-o7l2qb4bl9c3hr8cjtondr8t010gqro7.apps.googleusercontent.com";
+// Handles Google OAuth only on index.html
 
 function saveSession(userData) {
   localStorage.setItem("ssm_token", userData.token);
@@ -18,13 +16,13 @@ function saveSession(userData) {
   }));
 }
 
-// If already logged in, skip to buy page
+// If already logged in, skip straight to buy page
 if (localStorage.getItem("ssm_token")) {
   window.location.href = "html/buy.html";
 }
 
 // -------------------------------------------------------
-// Google Sign-In callback — must be on window to be global
+// Google Sign-In callback — must be global on window
 // -------------------------------------------------------
 window.handleGoogleResponse = async function(response) {
   const googleError = document.getElementById("google-error");
@@ -44,79 +42,74 @@ window.handleGoogleResponse = async function(response) {
       return;
     }
 
-    saveSession(data);
-    window.location.href = "html/buy.html";
+    if (data.pending) {
+      // New user — store name + email from Google, show profile form
+      sessionStorage.setItem("ssm_pending_google", JSON.stringify({ name: data.name, email: data.email }));
+      showCompleteProfileForm();
+    } else {
+      // Existing user — log straight in
+      saveSession(data);
+      window.location.href = "html/buy.html";
+    }
   } catch (err) {
     googleError.textContent = "Could not connect to server. Please try again.";
   }
+};
+
+// -------------------------------------------------------
+// Show complete-profile form, hide Google button
+// -------------------------------------------------------
+function showCompleteProfileForm() {
+  document.getElementById("google-section").classList.add("hidden");
+  document.getElementById("complete-profile-form").classList.remove("hidden");
 }
 
 // -------------------------------------------------------
-// Toggle Login / Register forms
+// Complete Profile submission (new Google users only)
 // -------------------------------------------------------
-const loginToggle = document.getElementById("show-login");
-const registerToggle = document.getElementById("show-register");
-const loginForm = document.getElementById("login-form");
-const registerForm = document.getElementById("register-form");
-
-loginToggle?.addEventListener("click", () => {
-  loginToggle.classList.add("active");
-  registerToggle.classList.remove("active");
-  loginForm.classList.remove("hidden");
-  registerForm.classList.add("hidden");
-  document.getElementById("login-error").textContent = "";
-  document.getElementById("register-error").textContent = "";
-});
-
-registerToggle?.addEventListener("click", () => {
-  registerToggle.classList.add("active");
-  loginToggle.classList.remove("active");
-  registerForm.classList.remove("hidden");
-  loginForm.classList.add("hidden");
-  document.getElementById("login-error").textContent = "";
-  document.getElementById("register-error").textContent = "";
-});
-
-// -------------------------------------------------------
-// Login
-// -------------------------------------------------------
-loginForm?.addEventListener("submit", async (e) => {
+document.getElementById("complete-profile-form")?.addEventListener("submit", async (e) => {
   e.preventDefault();
-  const errorEl = document.getElementById("login-error");
+  const errorEl = document.getElementById("complete-profile-error");
   errorEl.textContent = "";
-  try {
-    const userData = await loginUser(
-      document.getElementById("login-email").value,
-      document.getElementById("login-password").value
-    );
-    saveSession(userData);
-    window.location.href = "html/buy.html";
-  } catch (err) {
-    errorEl.textContent = err.message;
+
+  const pending = JSON.parse(sessionStorage.getItem("ssm_pending_google") || "{}");
+  if (!pending.email) {
+    errorEl.textContent = "Session expired. Please sign in with Google again.";
+    showGoogleSection();
+    return;
   }
-});
 
-// -------------------------------------------------------
-// Register
-// -------------------------------------------------------
-registerForm?.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const errorEl = document.getElementById("register-error");
-  errorEl.textContent = "";
   try {
-    const userData = await registerUser({
-      name: document.getElementById("register-name").value,
-      email: document.getElementById("register-email").value,
-      password: document.getElementById("register-password").value,
-      rollNumber: document.getElementById("register-roll").value,
-      universityRegisterNumber: document.getElementById("register-university-reg").value,
-      dob: document.getElementById("register-dob").value,
-      department: document.getElementById("register-department").value,
-      year: document.getElementById("register-year").value,
+    const res = await fetch("http://localhost:5000/api/auth/complete-profile", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: pending.name,
+        email: pending.email,
+        rollNumber: document.getElementById("cp-roll").value.trim(),
+        universityRegisterNumber: document.getElementById("cp-university-reg").value.trim(),
+        dob: document.getElementById("cp-dob").value,
+        department: document.getElementById("cp-department").value,
+        year: document.getElementById("cp-year").value,
+      }),
     });
-    saveSession(userData);
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      errorEl.textContent = data.message || "Failed to save profile. Please try again.";
+      return;
+    }
+
+    sessionStorage.removeItem("ssm_pending_google");
+    saveSession(data);
     window.location.href = "html/buy.html";
   } catch (err) {
-    errorEl.textContent = err.message;
+    errorEl.textContent = "Could not connect to server. Please try again.";
   }
 });
+
+function showGoogleSection() {
+  document.getElementById("google-section").classList.remove("hidden");
+  document.getElementById("complete-profile-form").classList.add("hidden");
+}

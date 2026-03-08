@@ -69,6 +69,11 @@ io.on("connection", (socket) => {
     }
   });
 
+  socket.on("leave_room", ({ productId, buyerEmail }) => {
+    const room = `${productId}::${buyerEmail}`;
+    socket.leave(room);
+  });
+
   socket.on("community_join", () => socket.join("community"));
   socket.on("community_message", (msg) => io.to("community").emit("community_message", msg));
   socket.on("community_like", (data) => io.to("community").emit("community_like", data));

@@ -86,34 +86,13 @@ async function loadInbox() {
       });
     });
 
-    // Auto-open thread from URL params (coming from buy.html)
-    const params = new URLSearchParams(window.location.search);
-    const paramProductId = params.get("productId");
-    const paramSellerEmail = params.get("sellerEmail");
-    const paramProductName = params.get("productName");
-
-    if (paramProductId && paramSellerEmail) {
-      const buyerEmail = currentUser.email;
-
-      // Find matching thread item or create a new one
-      const matchingItem = body.querySelector(`[data-product-id="${paramProductId}"][data-buyer-email="${buyerEmail}"]`);
-      if (matchingItem) {
-        matchingItem.classList.add("active");
-        openThread(
-          paramProductId,
-          buyerEmail,
-          decodeURIComponent(paramProductName || ""),
-          paramSellerEmail.split("@")[0]
-        );
-      } else {
-        // New conversation — open empty thread
-        openThread(
-          paramProductId,
-          buyerEmail,
-          decodeURIComponent(paramProductName || ""),
-          paramSellerEmail.split("@")[0]
-        );
-      }
+    // Highlight matching thread in sidebar if coming from buy.html
+    const _params = new URLSearchParams(window.location.search);
+    const _paramProductId = _params.get("productId");
+    const _buyerEmail = currentUser.email;
+    if (_paramProductId) {
+      const matchingItem = body.querySelector(`[data-product-id="${_paramProductId}"][data-buyer-email="${_buyerEmail}"]`);
+      if (matchingItem) matchingItem.classList.add("active");
     }
 
   } catch (err) {
@@ -130,7 +109,7 @@ async function openThread(productId, buyerEmail, productName, otherPersonName) {
   }
 
   activeProductId = productId;
-  activeBuyerEmail = buyerEmail;
+  activeBuyerEmail = buyerEmail.toLowerCase();
 
   document.getElementById("chat-panel-header").style.display = "flex";
   document.getElementById("panel-buyer-name").textContent = `👤 ${otherPersonName}`;
@@ -188,7 +167,7 @@ function renderMessages(messages, container) {
 // Receive real-time message
 // -------------------------------------------------------
 socket.on("receive_message", (msg) => {
-  if (msg.productId !== activeProductId || msg.buyerEmail !== activeBuyerEmail) {
+  if (msg.productId !== activeProductId || msg.buyerEmail.toLowerCase() !== activeBuyerEmail) {
     loadInbox();
     return;
   }
@@ -230,3 +209,20 @@ document.getElementById("chat-panel-form")?.addEventListener("submit", (e) => {
 
 // Load inbox on page load
 loadInbox();
+
+// Auto-open thread from URL params immediately, without waiting for inbox
+(function openThreadFromParams() {
+  const params = new URLSearchParams(window.location.search);
+  const paramProductId = params.get("productId");
+  const paramSellerEmail = params.get("sellerEmail");
+  const paramProductName = params.get("productName");
+
+  if (paramProductId && paramSellerEmail) {
+    openThread(
+      paramProductId,
+      currentUser.email,
+      decodeURIComponent(paramProductName || "Product"),
+      paramSellerEmail.split("@")[0]
+    );
+  }
+})();

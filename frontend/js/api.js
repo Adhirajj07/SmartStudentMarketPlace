@@ -62,6 +62,19 @@ async function loginUser(email, password) {
   return handleResponse(response);
 }
 
+/**
+ * POST /api/auth/complete-profile
+ * Create user account with full details after Google sign-in.
+ */
+async function updateUserProfile(payload) {
+  const response = await fetch(`${BASE_URL}/auth/complete-profile`, {
+    method: "POST",
+    headers: getHeaders(),
+    body: JSON.stringify(payload),
+  });
+  return handleResponse(response);
+}
+
 // -------------------------------------------------------
 // PRODUCT APIs
 // -------------------------------------------------------

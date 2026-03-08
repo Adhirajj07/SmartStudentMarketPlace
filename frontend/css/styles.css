@@ -146,9 +146,15 @@ select {
   border-radius: 1.5rem;
   padding: 2.25rem 2.2rem 2.5rem;
   max-height: 92vh;
-  overflow: auto;
+  overflow-y: auto;
+  scrollbar-width: none;        /* Firefox */
+  -ms-overflow-style: none;     /* IE/Edge */
   box-shadow: 0 24px 80px rgba(15, 23, 42, 0.9);
   border: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.auth-card::-webkit-scrollbar {
+  display: none;                /* Chrome/Safari */
 }
 
 .brand {
@@ -1372,4 +1378,21 @@ main {
 [data-theme="light"] .feature-list li { color: #374151 !important; }
 [data-theme="light"] .divider {
   background: linear-gradient(to right, transparent, #bfdbfe, transparent) !important;
+}
+/* Remove scrollbar */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+#auth-container {
+  height: 100vh;
+  overflow-y: auto;
+  scrollbar-width: none;        /* Firefox */
+  -ms-overflow-style: none;     /* IE/Edge */
+}
+
+#auth-container::-webkit-scrollbar {
+  display: none;                /* Chrome/Safari */
 }

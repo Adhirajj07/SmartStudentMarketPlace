@@ -1,5 +1,5 @@
 // backend/routes/authRoutes.js
-// Handles user registration, login, and Google OAuth
+// Handles Google OAuth and profile completion only
 
 const express = require("express");
 const router = express.Router();
@@ -51,7 +51,6 @@ router.post("/google", async (req, res) => {
   }
 
   try {
-    // Verify the Google ID token
     const ticket = await googleClient.verifyIdToken({
       idToken: credential,
       audience: GOOGLE_CLIENT_ID,
@@ -61,10 +60,10 @@ router.post("/google", async (req, res) => {
     const email = payload.email?.trim().toLowerCase();
     const name = payload.name || email.split("@")[0];
 
-    // Block non-college emails
+    // Block non-college Google accounts
     if (!isCollegeEmail(email)) {
       return res.status(403).json({
-        message: "Only @amjaincollege.edu.in email addresses are allowed.",
+        message: "Only @amjaincollege.edu.in Google accounts are allowed.",
       });
     }
 
@@ -72,26 +71,12 @@ router.post("/google", async (req, res) => {
     let user = await User.findOne({ email });
 
     if (user) {
-      // Existing user — just log them in
+      // Existing user — log them in directly
       return res.json(userResponse(user));
     }
 
-    // New user — auto-register with Google info
-    // They won't have roll number etc., so set defaults
-    user = await User.create({
-      name,
-      email,
-      password: Math.random().toString(36) + Math.random().toString(36), // random password (they use Google to login)
-      rollNumber: "N/A",
-      universityRegisterNumber: "N/A",
-      dob: "2000-01-01",
-      department: "N/A",
-      year: "N/A",
-      isVerifiedStudent: true,
-      googleAuth: true,
-    });
-
-    res.status(201).json(userResponse(user));
+    // New user — return pending so frontend shows the profile form
+    return res.status(200).json({ pending: true, name, email });
 
   } catch (error) {
     console.error("Google auth error:", error.message);
@@ -100,81 +85,52 @@ router.post("/google", async (req, res) => {
 });
 
 // -------------------------------------------------------
-// POST /api/auth/register
+// POST /api/auth/complete-profile
+// Creates user account after Google sign-in with all required fields
 // -------------------------------------------------------
-router.post("/register", async (req, res) => {
-  const { name, email, password, rollNumber, universityRegisterNumber, dob, department, year } = req.body;
+router.post("/complete-profile", async (req, res) => {
+  const { name, email, rollNumber, universityRegisterNumber, dob, department, year } = req.body;
 
-  if (!name || !email || !password || !rollNumber || !universityRegisterNumber || !dob || !department || !year) {
-    return res.status(400).json({ message: "Please fill all required registration details." });
-  }
-
-  if (password.length < 6) {
-    return res.status(400).json({ message: "Password must be at least 6 characters." });
+  if (!name || !email || !rollNumber || !universityRegisterNumber || !dob || !department || !year) {
+    return res.status(400).json({ message: "Please fill in all required fields." });
   }
 
   const normalizedEmail = email.trim().toLowerCase();
 
   if (!isCollegeEmail(normalizedEmail)) {
-    return res.status(400).json({ message: "Only verified college email IDs are allowed to register." });
-  }
-
-  const existingUser = await User.findOne({ email: normalizedEmail });
-  if (existingUser) {
-    return res.status(400).json({ message: "An account with this email already exists." });
+    return res.status(403).json({ message: "Only @amjaincollege.edu.in Google accounts are allowed." });
   }
 
   try {
-    const user = await User.create({
-      name: name.trim(),
-      email: normalizedEmail,
-      password,
-      rollNumber: rollNumber.trim(),
-      universityRegisterNumber: universityRegisterNumber.trim(),
-      dob: dob.trim(),
-      department: department.trim(),
-      year: year.trim(),
-    });
+    let user = await User.findOne({ email: normalizedEmail });
+
+    if (user) {
+      // Edge case: user re-submitted form — update their fields
+      user.rollNumber = rollNumber.trim();
+      user.universityRegisterNumber = universityRegisterNumber.trim();
+      user.dob = dob.trim();
+      user.department = department.trim();
+      user.year = year.trim();
+      await user.save();
+    } else {
+      // Create new user — no password needed, Google-authenticated
+      user = await User.create({
+        name: name.trim(),
+        email: normalizedEmail,
+        rollNumber: rollNumber.trim(),
+        universityRegisterNumber: universityRegisterNumber.trim(),
+        dob: dob.trim(),
+        department: department.trim(),
+        year: year.trim(),
+        isVerifiedStudent: true,
+        googleAuth: true,
+      });
+    }
 
     res.status(201).json(userResponse(user));
   } catch (error) {
-    console.error("Registration error:", error);
-    res.status(500).json({ message: "Server error during registration." });
-  }
-});
-
-// -------------------------------------------------------
-// POST /api/auth/login
-// -------------------------------------------------------
-router.post("/login", async (req, res) => {
-  const { email, password } = req.body;
-
-  if (!email || !password) {
-    return res.status(400).json({ message: "Please provide both email and password." });
-  }
-
-  const normalizedEmail = email.trim().toLowerCase();
-
-  if (!isCollegeEmail(normalizedEmail)) {
-    return res.status(400).json({ message: "Only verified college email IDs are allowed." });
-  }
-
-  try {
-    const user = await User.findOne({ email: normalizedEmail });
-
-    if (!user) {
-      return res.status(401).json({ message: "Invalid email or password." });
-    }
-
-    const isMatch = await user.matchPassword(password);
-    if (!isMatch) {
-      return res.status(401).json({ message: "Invalid email or password." });
-    }
-
-    res.json(userResponse(user));
-  } catch (error) {
-    console.error("Login error:", error);
-    res.status(500).json({ message: "Server error during login." });
+    console.error("Complete profile error:", error);
+    res.status(500).json({ message: "Server error while saving profile." });
   }
 });
 
