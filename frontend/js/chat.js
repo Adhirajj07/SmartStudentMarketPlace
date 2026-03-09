@@ -5,7 +5,7 @@ initNav();
 clearUnread("chat");
 
 const currentUser = getCurrentUser();
-const socket = io("https://ssm-backend-upny.onrender.com:5000");
+const socket = io("https://ssm-backend-upny.onrender.com");
 
 let activeProductId = null;
 let activeBuyerEmail = null;
@@ -113,7 +113,7 @@ async function openThread(productId, buyerEmail, productName, otherPersonName) {
 
   document.getElementById("chat-panel-header").style.display = "flex";
   document.getElementById("panel-buyer-name").textContent = `👤 ${otherPersonName}`;
-  document.getElementById("panel-product-name").textContent = `📦 ${productName}`;
+  document.getElementById("panel-product-name").textContent = `📦 ${productName} • ⭐ Click seller name on Buy page to leave a review`;
   document.getElementById("chat-panel-form").style.display = "flex";
 
   socket.emit("join_room", { productId, buyerEmail });
