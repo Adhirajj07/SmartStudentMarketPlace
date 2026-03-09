@@ -7,6 +7,7 @@ const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
 const cors = require("cors");
+const rateLimit = require("express-rate-limit");
 const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const productRoutes = require("./routes/productRoutes");
@@ -20,10 +21,65 @@ const Product = require("./models/Product");
 connectDB();
 const app = express();
 const httpServer = http.createServer(app);
-const io = new Server(httpServer, { cors: { origin: "*", methods: ["GET", "POST"] } });
 
-app.use(cors({ origin: "*", methods: ["GET", "POST", "PUT", "DELETE"] }));
+// ---- Allowed origins ----
+const ALLOWED_ORIGINS = [
+  "https://ssm-project-lake.vercel.app",
+  "https://ssm-backend-upny.onrender.com",
+  "http://localhost:5500",
+  "http://127.0.0.1:5500",
+  "http://localhost:3000",
+];
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, curl, Postman)
+    if (!origin || ALLOWED_ORIGINS.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true,
+};
+
+const io = new Server(httpServer, {
+  cors: {
+    origin: ALLOWED_ORIGINS,
+    methods: ["GET", "POST"],
+    credentials: true,
+  },
+});
+
+app.use(cors(corsOptions));
 app.use(express.json());
+
+// ---- Rate limiting ----
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // max 100 requests per 15 mins per IP
+  message: { message: "Too many requests. Please try again later." },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20, // stricter limit on auth routes
+  message: { message: "Too many login attempts. Please try again later." },
+});
+
+app.use(limiter);
+app.use("/api/auth", authLimiter);
+
+// ---- Security headers ----
+app.use((req, res, next) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "DENY");
+  res.setHeader("X-XSS-Protection", "1; mode=block");
+  next();
+});
 
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
@@ -54,14 +110,14 @@ io.on("connection", (socket) => {
         sellerEmail: product.sellerEmail.toLowerCase(),
         senderEmail: senderEmail.toLowerCase(),
         senderName,
-        text, // plain text — Message model encrypts before saving
+        text,
       });
       const room = `${productId}::${buyerEmail}`;
       io.to(room).emit("receive_message", {
         _id: message._id, productId, buyerEmail,
         senderEmail: message.senderEmail,
         senderName: message.senderName,
-        text: text, // emit original plain text, not the encrypted version
+        text: text,
         createdAt: message.createdAt,
       });
     } catch (error) {
