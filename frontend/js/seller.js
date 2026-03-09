@@ -94,7 +94,7 @@ async function loadReviews() {
 
   try {
     // Fetch reviews directly (public endpoint, no auth needed)
-    const response = await fetch("http://localhost:5000/api/reviews/" + encodeURIComponent(sellerEmail));
+    const response = await fetch("https://ssm-backend-upny.onrender.com/api/reviews/" + encodeURIComponent(sellerEmail));
     const { reviews, avgRating, totalReviews } = await response.json();
 
     // Always update profile card

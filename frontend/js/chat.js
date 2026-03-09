@@ -5,7 +5,7 @@ initNav();
 clearUnread("chat");
 
 const currentUser = getCurrentUser();
-const socket = io("http://localhost:5000");
+const socket = io("http://https://ssm-backend-upny.onrender.com:5000");
 
 let activeProductId = null;
 let activeBuyerEmail = null;
@@ -27,14 +27,14 @@ async function loadInbox() {
 
     // Fetch threads where user is seller
     const sellerRes = await fetch(
-      `http://localhost:5000/api/chat/inbox/${currentUser.email}`,
+      `https://ssm-backend-upny.onrender.com/api/chat/inbox/${currentUser.email}`,
       { headers: { Authorization: `Bearer ${token}` } }
     );
     const sellerThreads = await sellerRes.json();
 
     // Fetch threads where user is buyer
     const buyerRes = await fetch(
-      `http://localhost:5000/api/chat/buyer-inbox/${currentUser.email}`,
+      `https://ssm-backend-upny.onrender.com/api/chat/buyer-inbox/${currentUser.email}`,
       { headers: { Authorization: `Bearer ${token}` } }
     );
     const buyerThreads = await buyerRes.json();
@@ -131,7 +131,7 @@ async function loadThreadMessages(productId, buyerEmail) {
   try {
     const token = getToken();
     const response = await fetch(
-      `http://localhost:5000/api/chat/${productId}/${buyerEmail}`,
+      `https://ssm-backend-upny.onrender.com/api/chat/${productId}/${buyerEmail}`,
       { headers: { Authorization: `Bearer ${token}` } }
     );
     const messages = await response.json();
