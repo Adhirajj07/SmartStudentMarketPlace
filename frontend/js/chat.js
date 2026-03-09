@@ -5,7 +5,7 @@ initNav();
 clearUnread("chat");
 
 const currentUser = getCurrentUser();
-const socket = io("http://https://ssm-backend-upny.onrender.com:5000");
+const socket = io("https://ssm-backend-upny.onrender.com:5000");
 
 let activeProductId = null;
 let activeBuyerEmail = null;
