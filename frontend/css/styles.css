@@ -1396,3 +1396,32 @@ html, body {
 #auth-container::-webkit-scrollbar {
   display: none;                /* Chrome/Safari */
 }
+/* ---- Paste this into your styles.css ---- */
+
+.pinned-admin-msg {
+  border: 2px solid var(--accent, #6c63ff) !important;
+  background: linear-gradient(135deg, rgba(108, 99, 255, 0.08), rgba(108, 99, 255, 0.03)) !important;
+  border-radius: 12px;
+  margin-bottom: 1.2rem;
+  position: relative;
+}
+
+.admin-avatar {
+  background: linear-gradient(135deg, #6c63ff, #a855f7) !important;
+  font-size: 1.1rem;
+}
+
+.admin-name {
+  color: #a855f7 !important;
+  font-weight: 700;
+}
+
+.pinned-badge {
+  font-size: 0.7rem;
+  background: rgba(108, 99, 255, 0.15);
+  color: #a855f7;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-weight: 600;
+  margin-left: 6px;
+}

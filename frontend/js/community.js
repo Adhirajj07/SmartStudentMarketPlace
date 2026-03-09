@@ -18,6 +18,39 @@ const socket = io(BASE);
 socket.emit("community_join");
 
 // -------------------------------------------------------
+// Pinned Admin Message (always shown at top)
+// -------------------------------------------------------
+const PINNED_ADMIN_MESSAGE = `
+  <div class="msg-bubble pinned-admin-msg" id="pinned-admin">
+    <div class="msg-avatar admin-avatar">📢</div>
+    <div class="msg-body">
+      <div class="msg-meta">
+        <span class="msg-name admin-name">🛡️ Admin</span>
+        <span class="msg-dept">SSM Team</span>
+        <span class="pinned-badge">📌 Pinned</span>
+      </div>
+      <div class="msg-text">
+        <strong>Welcome to the SSM Community! 👋</strong><br><br>
+        This space is created for students to connect and support each other — especially for important needs like finding a <strong>scribe for exams</strong>. 📝<br><br>
+        ✅ You can post here to request or offer help as a scribe for university exams.<br>
+        ✅ Share study resources, notes, or academic help.<br>
+        ✅ Ask questions about college services and facilities.<br><br>
+        <em>Please be respectful. All messages are AI-moderated. Messages auto-delete after 24 hours.</em>
+      </div>
+    </div>
+  </div>
+`;
+
+function renderPinnedMessage() {
+  // Remove existing pinned message if present
+  const existing = document.getElementById("pinned-admin");
+  if (existing) existing.remove();
+
+  // Insert at the very top of container
+  container.insertAdjacentHTML("afterbegin", PINNED_ADMIN_MESSAGE);
+}
+
+// -------------------------------------------------------
 // Render a single message bubble
 // -------------------------------------------------------
 function renderMessage(msg) {
@@ -78,13 +111,17 @@ async function loadMessages() {
           <div class="emoji">💬</div>
           <p>No messages yet. Be the first to say something!</p>
         </div>`;
-      return;
+    } else {
+      container.innerHTML = messages.map(renderMessage).join("");
+      scrollToBottom();
     }
 
-    container.innerHTML = messages.map(renderMessage).join("");
-    scrollToBottom();
+    // Always render pinned message at top (after setting content)
+    renderPinnedMessage();
+
   } catch (err) {
     container.innerHTML = `<p class="muted small" style="padding:1rem;">Could not load messages.</p>`;
+    renderPinnedMessage();
   }
 }
 
@@ -178,6 +215,9 @@ function appendMessage(msg) {
   const div = document.createElement("div");
   div.innerHTML = renderMessage(msg);
   container.appendChild(div.firstElementChild);
+
+  // Keep pinned message at top always
+  renderPinnedMessage();
 }
 
 // -------------------------------------------------------
