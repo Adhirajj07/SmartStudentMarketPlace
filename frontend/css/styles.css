@@ -1399,7 +1399,6 @@ html, body {
 /* ---- Paste this into your styles.css ---- */
 
 .pinned-admin-msg {
-  border: 2px solid var(--accent, #6c63ff) !important;
   background: linear-gradient(135deg, rgba(108, 99, 255, 0.08), rgba(108, 99, 255, 0.03)) !important;
   border-radius: 12px;
   margin-bottom: 1.2rem;

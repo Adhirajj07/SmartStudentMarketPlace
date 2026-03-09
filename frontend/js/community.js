@@ -35,7 +35,7 @@ const PINNED_ADMIN_MESSAGE = `
         ✅ You can post here to request or offer help as a scribe for university exams.<br>
         ✅ Share study resources, notes, or academic help.<br>
         ✅ Ask questions about college services and facilities.<br><br>
-        <em>Please be respectful. All messages are AI-moderated. Messages auto-delete after 24 hours.</em>
+        <em>Please be respectful. All messages are AI-moderated.If the Message is Inappropriate AI will detect and show the message is Inappropriate . Messages auto-delete after 2 hours.</em>
       </div>
     </div>
   </div>
