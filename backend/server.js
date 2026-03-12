@@ -24,7 +24,7 @@ const httpServer = http.createServer(app);
 
 // ---- Allowed origins ----
 const ALLOWED_ORIGINS = [
-  "https://ssm-project-lake.vercel.app",
+  "https://smart-student-market-place.vercel.app",
   "https://ssm-backend-upny.onrender.com",
   "http://localhost:5500",
   "http://127.0.0.1:5500",
