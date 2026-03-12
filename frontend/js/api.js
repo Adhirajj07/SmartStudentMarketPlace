@@ -2,7 +2,7 @@
 // Central module for all communication with the backend API.
 // Every fetch() call lives here — no API calls in app.js.
 
-const BASE_URL = "https://ssm-backend-upny.onrender.com/api";
+const BASE_URL = "https://smartstudentmarketplace.onrender.com/api";
 
 // -------------------------------------------------------
 // Helper: build headers (adds Authorization token if present)

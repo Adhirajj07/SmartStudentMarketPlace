@@ -75,7 +75,7 @@ async function loadProducts() {
   const ratingMap = {};
   await Promise.all(uniqueSellerEmails.map(async (email) => {
     try {
-      const response = await fetch("https://ssm-backend-upny.onrender.com/api/reviews/" + encodeURIComponent(email));
+      const response = await fetch("https://smartstudentmarketplace.onrender.com/api/reviews/" + encodeURIComponent(email));
       const data = await response.json();
       ratingMap[email.toLowerCase()] = data;
     } catch (e) {}

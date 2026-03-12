@@ -61,7 +61,7 @@ async function loadMyListings() {
 
   // Load review count for seller
   try {
-    const response = await fetch("https://ssm-backend-upny.onrender.com/api/reviews/" + encodeURIComponent(user.email));
+    const response = await fetch("https://smartstudentmarketplace.onrender.com/api/reviews/" + encodeURIComponent(user.email));
     const data = await response.json();
     mine.forEach(product => {
       const el = document.getElementById("my-rating-" + product._id);
@@ -97,7 +97,7 @@ document.getElementById("my-listings")?.addEventListener("click", async (e) => {
 // -------------------------------------------------------
 async function checkProductWithAI(name, description, category) {
   const token = localStorage.getItem("ssm_token");
-  const response = await fetch("https://ssm-backend-upny.onrender.com/api/ai-check", {
+  const response = await fetch("https://smartstudentmarketplace.onrender.com/api/ai-check", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

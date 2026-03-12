@@ -29,7 +29,7 @@ window.handleGoogleResponse = async function(response) {
   googleError.textContent = "";
 
   try {
-    const res = await fetch("https://ssm-backend-upny.onrender.com/api/auth/google", {
+    const res = await fetch("https://smartstudentmarketplace.onrender.com/api/auth/google", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ credential: response.credential }),
@@ -80,7 +80,7 @@ document.getElementById("complete-profile-form")?.addEventListener("submit", asy
   }
 
   try {
-    const res = await fetch("https://ssm-backend-upny.onrender.com/api/auth/complete-profile", {
+    const res = await fetch("https://smartstudentmarketplace.onrender.com/api/auth/complete-profile", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

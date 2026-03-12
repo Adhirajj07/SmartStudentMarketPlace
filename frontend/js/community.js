@@ -5,7 +5,7 @@ initNav();
 
 const currentUser = getCurrentUser();
 const token = localStorage.getItem("ssm_token");
-const BASE = "https://ssm-backend-upny.onrender.com";
+const BASE = "https://smartstudentmarketplace.onrender.com";
 
 const container = document.getElementById("messages-container");
 const input = document.getElementById("community-input");
